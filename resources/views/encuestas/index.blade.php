@@ -19,7 +19,7 @@
             data-bs-toggle="modal"
             data-bs-target="#procesarModal"
         >
-            Procesar encuesta (ingresar ID)
+            Procesar encuesta
         </button>
     </div>
 
@@ -76,7 +76,7 @@
             <div class="modal-body">
                 <div class="mb-3">
                     <label for="idManual" class="form-label">ID de la encuesta</label>
-                    <input type="text" class="form-control" id="idManual" placeholder="Ej: pqJpzbQr" required>
+                    <input type="text" class="form-control" id="idManual" placeholder="" required>
                     <div class="form-text">Introduce el ID de la encuesta que deseas procesar.</div>
                 </div>
                 <div id="procesarModalAlert" class="text-danger small d-none">Por favor introduce un ID válido.</div>
@@ -91,12 +91,38 @@
   </div>
 </div>
 
+<div id="loadingOverlay">
+    <div class="spinner-border" role="status"></div>
+    <p class="mt-2">Procesando, por favor espera...</p>
+</div>
+
+<style>
+#loadingOverlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(255,255,255,0.8);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    z-index: 2000;
+}
+#loadingOverlay .spinner-border {
+    width: 4rem;
+    height: 4rem;
+}
+</style>
+
 <script>
 document.addEventListener('DOMContentLoaded', function () {
     var modalEl = document.getElementById('procesarModal');
     var idManual = document.getElementById('idManual');
     var idHidden = document.getElementById('idEncuestaInput');
     var alertEl = document.getElementById('procesarModalAlert');
+    var overlay = document.getElementById('loadingOverlay');
 
     // Antes de enviar el formulario, copia el valor del input visible al hidden
     document.querySelector('#procesarModal form').addEventListener('submit', function (e) {
@@ -108,6 +134,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         idHidden.value = val;
         alertEl.classList.add('d-none');
+        overlay.style.display = 'flex';
     });
 
     // Cuando se abra el modal, limpiar campos

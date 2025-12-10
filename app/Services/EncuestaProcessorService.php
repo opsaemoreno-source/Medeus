@@ -64,15 +64,36 @@ class EncuestaProcessorService
             "noRespuestas"      => $totalResponses
         ];
 
+        $query = sprintf(
+            "SELECT COUNT(*) AS total FROM `%s.%s.%s` WHERE id = @idForm",
+            $projectId,
+            $datasetId,
+            $tableId
+        );
+
+        $jobConfig = $bigQuery->query($query)->parameters([
+            'idForm' => $formData["id"] ?? ''
+        ]);
+
+        $results = $bigQuery->runQuery($jobConfig);
+
+        if ($results->isComplete()) {
+            foreach ($results as $row) {
+                if (($row['total'] ?? 0) > 0) {
+                    // Ya existe el formulario → detener proceso
+                    throw new Exception("El formulario con ID {$formData['id']} ya fue procesado anteriormente.");
+                }
+            }
+        } else {
+            throw new Exception("No se pudo validar existencia previa en BigQuery.");
+        }
+
         $insertResponse = $table->insertRows([['data' => $dataBQ]]);
 
         if (!$insertResponse->isSuccessful()) {
             Log::error('BigQuery insert base failed', ['failedRows' => $insertResponse->failedRows()]);
             throw new Exception("Error al insertar en tabla base (BigQuery).");
         }
-
-        Log::info('Mensaje de prueba');
-        Log::debug('Variable:', ['data' => $dataBQ]);
 
         // Obtener todas las respuestas del formulario (paginación)
         $apiUrl = "https://api.typeform.com/forms/{$formId}/responses";
@@ -102,10 +123,6 @@ class EncuestaProcessorService
 
             $lastItem = end($data['items']);
             $after = $lastItem['token'] ?? null;
-
-            // Si Typeform ofrece un cursor 'page' o 'next_after' preferirlo:
-            // $after = $data['page']['next_after'] ?? null;
-            //$totalResponses = $data['total_items'];
 
         } while ($after);
 
@@ -174,6 +191,8 @@ class EncuestaProcessorService
             $fechaInicio = $item['landed_at'] ?? '0001-01-01 00:00:00';
             $fechaFin = $item['submitted_at'] ?? '0001-01-01 00:00:00';
             $tokenResp = $item['token'] ?? 'GUEST';
+            $userAgent = $item['metadata']['user_agent'] ?? '';
+            $platform = $item['metadata']['platform'] ?? '';
 
             if (!isset($item['answers']) || !is_array($item['answers'])) {
                 continue;
@@ -198,7 +217,9 @@ class EncuestaProcessorService
                     'tipoRespuesta'  => $tipoRespuesta,
                     'fechaInicio'    => $this->transformDate($fechaInicio),
                     'fechaFin'       => $this->transformDate($fechaFin),
-                    'token'          => $tokenResp
+                    'token'          => $tokenResp,
+                    'user_agent'     => $userAgent,
+                    'platform'       => $platform
                 ];
             }
         }
