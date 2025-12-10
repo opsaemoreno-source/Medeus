@@ -1,0 +1,30 @@
+@extends('layouts.app')
+
+@section('content')
+<div class="container mt-4">
+
+    <h2 class="mb-4">Dashboard</h2>
+
+    <div class="row">
+        <!-- Tarjeta: Encuestas -->
+        <div class="col-md-4 mb-4">
+            <a href="{{ route('encuestas.index') }}" class="text-decoration-none">
+                <div class="card text-white" style="background-color: #6ca8a8; border: none; border-radius: 12px;">
+                    <div class="card-body d-flex flex-column align-items-start p-4">
+                        <h3 class="fw-bold mb-1">Encuestas</h3>
+                        <p class="mb-0">Ver listado de encuestas ingresadas</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        {{-- Aquí podrás agregar más tarjetas en el futuro --}}
+        <!-- Ejemplo vacío
+        <div class="col-md-4 mb-4">
+            <div class="card bg-secondary text-white">...</div>
+        </div>
+        -->
+    </div>
+
+</div>
+@endsection
