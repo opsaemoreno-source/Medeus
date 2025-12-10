@@ -17,6 +17,26 @@
                 </div>
             </a>
         </div>
+        <div class="col-md-4 mb-4">
+            <a href="{{ route('suscriptores.index') }}" class="text-decoration-none">
+                <div class="card text-white" style="background-color: #28a745; border: none; border-radius: 12px;">
+                    <div class="card-body d-flex flex-column align-items-start p-4">
+                        <h3 class="fw-bold mb-1">Suscriptores</h3>
+                        <p class="mb-0">Ver listado de suscriptores registrados</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+        <div class="col-md-4 mb-4">
+            <a href="{{ route('users.index') }}" class="text-decoration-none">
+                <div class="card text-white" style="background-color: #ffc107; border: none; border-radius: 12px;">
+                    <div class="card-body d-flex flex-column align-items-start p-4">
+                        <h3 class="fw-bold mb-1">Usuarios</h3>
+                        <p class="mb-0">Ver listado de usuarios registrados</p>
+                    </div>
+                </div>
+            </a>
+        </div>
 
         {{-- Aquí podrás agregar más tarjetas en el futuro --}}
         <!-- Ejemplo vacío

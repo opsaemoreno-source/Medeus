@@ -3,6 +3,7 @@
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\EncuestasController;
+use App\Http\Controllers\SuscriptoresController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
@@ -32,5 +33,12 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/encuestas', [EncuestasController::class, 'index'])->name('encuestas.index');
     Route::post('/encuestas/procesar', [EncuestasController::class, 'procesar'])->name('encuestas.procesar');
 });
+
+Route::get('/suscriptores', [SuscriptoresController::class, 'index'])
+    ->middleware('auth')
+    ->name('suscriptores.index');
+
+// Endpoint AJAX para DataTables
+Route::get('/suscriptores/data', [SuscriptoresController::class, 'data'])->name('suscriptores.data');
 
 require __DIR__.'/auth.php';

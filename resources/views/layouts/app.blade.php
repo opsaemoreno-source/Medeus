@@ -54,5 +54,7 @@
     @yield('content')
 </main>
 
+<!-- Scripts de cada vista -->
+@yield('scripts')
 </body>
 </html>
