@@ -34,7 +34,8 @@ class EstadisticasController extends Controller
         $estadisticas = $service->obtenerEstadisticas();
 
         return response()->json([
-            'html' => view('estadisticas.partials.suscriptores', compact('estadisticas'))->render()
+            'html' => view('estadisticas.partials.suscriptores')->with('estadisticas', $estadisticas)->render(),
+            'data' => $estadisticas
         ]);
     }
 

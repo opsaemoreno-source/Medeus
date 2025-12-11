@@ -16,7 +16,7 @@
             <ul class="navbar-nav me-auto mb-2 mb-lg-0">
                 <li class="nav-item">
                     <a class="nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}" href="{{ route('dashboard') }}">
-                        Dashboard
+                        {{ config('app.name', 'Laravel') }}
                     </a>
                 </li>
                 <!-- Agrega más links aquí -->
@@ -31,12 +31,12 @@
                         {{ Auth::user()->name }}
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                        <li><a class="dropdown-item" href="{{ route('profile.edit') }}">Profile</a></li>
+                        <li><a class="dropdown-item" href="{{ route('profile.edit') }}">Perfil</a></li>
                         <li><hr class="dropdown-divider"></li>
                         <li>
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
-                                <button class="dropdown-item" type="submit">Log Out</button>
+                                <button class="dropdown-item" type="submit">Cerrar Sesión</button>
                             </form>
                         </li>
                     </ul>
