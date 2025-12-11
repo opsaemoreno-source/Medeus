@@ -33,7 +33,7 @@
 
         <!-- Tarjeta: Estadísticas -->
         <div class="col-md-4">
-            <a href="{{ route('suscriptores.index') }}" class="text-decoration-none">
+            <a href="{{ route('estadisticas.index') }}" class="text-decoration-none">
                 <div class="card text-white shadow-sm h-100" style="background-color: #6f42c1; border-radius: 12px;">
                     <div class="card-body d-flex flex-column justify-content-between p-4">
                         <h3 class="fw-bold mb-2">Estadísticas</h3>
@@ -44,6 +44,7 @@
         </div>
 
         <!-- Tarjeta: Usuarios -->
+        @if(Auth::user() && Auth::user()->is_admin == 1)
         <div class="col-md-4">
             <a href="{{ route('users.index') }}" class="text-decoration-none">
                 <div class="card text-white shadow-sm h-100" style="background-color: #fd7e14; border-radius: 12px;">
@@ -54,6 +55,7 @@
                 </div>
             </a>
         </div>
+        @endif
 
     </div>
 </div>
