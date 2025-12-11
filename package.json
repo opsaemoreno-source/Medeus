@@ -3,16 +3,15 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "build": "vite build",
-        "dev": "vite"
+        "build": "echo 'No build needed'",
+        "dev": "npm run watch-css"
     },
     "devDependencies": {
         "alpinejs": "^3.4.2",
-        "axios": "^1.11.0",
-        "concurrently": "^9.0.1",
-        "laravel-vite-plugin": "1.0.1",
-        "vite": "4.5.0",
-	"esbuild": "0.17.19"
+        "autoprefixer": "^10.4.2",
+        "axios": "^1.8.2",
+        "concurrently": "^7.6.0",
+        "postcss": "^8.4.31"
     },
     "dependencies": {
         "@popperjs/core": "^2.11.8",
