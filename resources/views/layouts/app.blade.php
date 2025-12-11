@@ -17,7 +17,10 @@
 </head>
 <body class="font-sans antialiased">
     <div class="min-h-screen bg-gray-100">
-        @include('layouts.navigation')
+        @auth
+            @include('layouts.navigation')
+        @endauth
+
 
         <!-- Page Heading -->
         @if (isset($header))
@@ -33,5 +36,6 @@
             @yield('content')
         </main>
     </div>
+    @yield('scripts')
 </body>
 </html>
