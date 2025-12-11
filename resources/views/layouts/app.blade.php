@@ -6,7 +6,9 @@
 
     <title>{{ config('app.name', 'Laravel') }}</title>
 
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    <script src="{{ asset('js/app.js') }}" defer></script>
+
 </head>
 <body class="bg-light">
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
