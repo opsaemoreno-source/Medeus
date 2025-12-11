@@ -6,57 +6,32 @@
 
     <title>{{ config('app.name', 'Laravel') }}</title>
 
+    <!-- Fonts -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap">
+
+    <!-- Styles -->
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+
+    <!-- Scripts -->
     <script src="{{ asset('js/app.js') }}" defer></script>
- 
 </head>
-<body class="bg-light">
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4">
-    <div class="container">
-        <a class="navbar-brand" href="{{ url('/') }}">
-            {{ config('app.name', 'Laravel') }}
-        </a>
+<body class="font-sans antialiased">
+    <div class="min-h-screen bg-gray-100">
+        @include('layouts.navigation')
 
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" 
-                data-bs-target="#navbarSupportedContent">
-            <span class="navbar-toggler-icon"></span>
-        </button>
+        <!-- Page Heading -->
+        @if (isset($header))
+            <header class="bg-white shadow">
+                <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                    {{ $header }}
+                </div>
+            </header>
+        @endif
 
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav ms-auto">
-
-                @guest
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('login') }}">Iniciar sesión</a>
-                    </li>
-
-                    <li class="nav-item">
-                        <a class="nav-link" href="{{ route('register') }}">Registrarse</a>
-                    </li>
-                @else
-                    <li class="nav-item">
-                        <span class="nav-link">{{ Auth::user()->name }}</span>
-                    </li>
-
-                    <li class="nav-item">
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
-                            <button class="btn btn-danger btn-sm">Salir</button>
-                        </form>
-                    </li>
-                @endguest
-
-            </ul>
-        </div>
+        <!-- Page Content -->
+        <main>
+            {{ $slot }}
+        </main>
     </div>
-</nav>
-
-<main class="container">
-    @yield('content')
-</main>
-
-<!-- Scripts de cada vista -->
-@yield('scripts')
 </body>
 </html>
