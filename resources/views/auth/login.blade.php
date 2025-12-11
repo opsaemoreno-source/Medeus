@@ -16,7 +16,9 @@
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
             @endif
-
+            <div class="d-flex justify-content-center mb-3">
+                <img src="{{ asset('images/logo2.png') }}" alt="MEDEUS" class="img-fluid" style="max-height: 100px;">
+            </div>
             <form method="POST" action="{{ route('login') }}">
                 @csrf
 
