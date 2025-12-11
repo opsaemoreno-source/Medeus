@@ -37,13 +37,6 @@
                 </div>
             </a>
         </div>
-
-        {{-- Aquí podrás agregar más tarjetas en el futuro --}}
-        <!-- Ejemplo vacío
-        <div class="col-md-4 mb-4">
-            <div class="card bg-secondary text-white">...</div>
-        </div>
-        -->
     </div>
 
 </div>

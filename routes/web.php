@@ -4,6 +4,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\EncuestasController;
 use App\Http\Controllers\SuscriptoresController;
+use App\Http\Controllers\EstadisticasController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
@@ -40,5 +41,23 @@ Route::get('/suscriptores', [SuscriptoresController::class, 'index'])
 
 // Endpoint AJAX para DataTables
 Route::get('/suscriptores/data', [SuscriptoresController::class, 'data'])->name('suscriptores.data');
+
+Route::middleware(['auth'])->group(function () {
+    Route::get('/estadisticas', function () {
+        return view('estadisticas.index');
+    })->name('estadisticas.index');
+});
+
+Route::middleware(['auth'])->group(function () {
+
+    // HUB principal
+    Route::get('/estadisticas', [EstadisticasController::class, 'index'])
+        ->name('estadisticas.index');
+
+    // Cargar parciales vía AJAX
+    Route::get('/estadisticas/encuestas', [EstadisticasController::class, 'encuestas']);
+    Route::get('/estadisticas/suscriptores', [EstadisticasController::class, 'suscriptores']);
+    Route::get('/estadisticas/avanzado', [EstadisticasController::class, 'avanzado']);
+});
 
 require __DIR__.'/auth.php';
