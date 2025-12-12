@@ -41,6 +41,15 @@ Route::get('/suscriptores', [SuscriptoresController::class, 'index'])
 
 // Endpoint AJAX para DataTables
 Route::get('/suscriptores/data', [SuscriptoresController::class, 'data'])->name('suscriptores.data');
+// Obtener estadística por día (rango de fechas opcional)
+Route::get('/suscriptores/estadistica', [SuscriptoresController::class, 'estadisticaPorDia'])
+    ->middleware('auth')
+    ->name('suscriptores.estadistica');
+// Exportar suscriptores con filtros aplicados
+Route::get('/suscriptores/exportar', [SuscriptoresController::class, 'exportar'])
+    ->middleware('auth')
+    ->name('suscriptores.exportar');
+
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/estadisticas', function () {

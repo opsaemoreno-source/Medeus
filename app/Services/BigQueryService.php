@@ -101,9 +101,6 @@ class BigQueryService
             ];
         }
 
-        // Depuración temporal
-        //dd($suscriptores);
-
         return $suscriptores;
     }
 
@@ -126,4 +123,159 @@ class BigQueryService
 
         return 0;
     }
+
+    public function obtenerConteoTotalSuscriptores()
+    {
+        $query = "
+            SELECT COUNT(*) AS total
+            FROM `admanagerapiaccess-382213.UsuariosOPSA.UsuariosEvolok`
+        ";
+
+        $results = $this->bigQuery->runQuery($this->bigQuery->query($query));
+
+        foreach ($results->rows() as $row) {
+            return intval($row['total']);
+        }
+        return 0;
+    }
+
+    public function obtenerEstadisticaPorDia($fechaInicio = null, $fechaFin = null)
+    {
+        $filtro = "";
+        if ($fechaInicio && $fechaFin) {
+            $filtro = "WHERE fechaCreacion BETWEEN '$fechaInicio 00:00:00' AND '$fechaFin 23:59:59'";
+        }
+
+        $query = "
+            SELECT 
+                DATE(fechaCreacion) AS fecha,
+                COUNT(*) AS total
+            FROM `admanagerapiaccess-382213.UsuariosOPSA.UsuariosEvolok`
+            $filtro
+            GROUP BY fecha
+            ORDER BY fecha ASC
+        ";
+
+        $results = $this->bigQuery->runQuery($this->bigQuery->query($query));
+
+        $estadistica = [];
+        foreach ($results->rows() as $row) {
+            // Convertir a string plano
+            $fecha = $row['fecha'];
+            if (is_object($fecha) && method_exists($fecha, 'format')) {
+                // Si es DateTime
+                $fecha = $fecha->format('Y-m-d');
+            } elseif (is_object($fecha)) {
+                // Para objetos de BigQuery DATE o Timestamp
+                $fecha = (string) $fecha;
+            }
+
+            $estadistica[] = [
+                'fecha' => $fecha,
+                'total' => $row['total']
+            ];
+        }
+
+        return $estadistica;
+    }
+
+
+    public function obtenerSuscriptoresPaginadosConFiltro($start, $length, $search, $fechaInicio, $fechaFin)
+    {
+        $filtro = [];
+
+        if ($search) {
+            $filtro[] = "LOWER(CONCAT(nombre,' ',apellido)) LIKE LOWER('%$search%')";
+        }
+        if ($fechaInicio && $fechaFin) {
+            $filtro[] = "fechaCreacion BETWEEN '$fechaInicio' AND '$fechaFin'";
+        }
+
+        $where = count($filtro) ? "WHERE " . implode(" AND ", $filtro) : "";
+
+        $query = "
+            SELECT 
+                userid,
+                CONCAT(nombre, ' ', apellido) AS nombre_completo,
+                correo,
+                telefono,
+                suscripcionActiva,
+                estado
+            FROM `admanagerapiaccess-382213.UsuariosOPSA.UsuariosEvolok`
+            $where
+            ORDER BY nombre_completo
+            LIMIT $length OFFSET $start
+        ";
+
+        $results = $this->bigQuery->runQuery($this->bigQuery->query($query));
+        $suscriptores = [];
+
+        foreach ($results->rows() as $row) {
+            $suscriptores[] = [
+                'userid' => $row['userid'] ?? '',
+                'nombre_completo' => $row['nombre_completo'] ?? '',
+                'correo' => $row['correo'] ?? '',
+                'telefono' => $row['telefono'] ?? '',
+                'suscripcionActiva' => isset($row['suscripcionActiva']) ? ($row['suscripcionActiva'] ? 'Sí' : 'No') : 'No',
+                'estado' => $row['estado'] ?? ''
+            ];
+        }
+
+        return $suscriptores;
+    }
+
+
+    public function contarSuscriptoresConFiltro($search, $fechaInicio, $fechaFin)
+    {
+        $filtro = [];
+
+        if ($search) {
+            $filtro[] = "LOWER(CONCAT(nombre,' ',apellido)) LIKE LOWER('%$search%')";
+        }
+        if ($fechaInicio && $fechaFin) {
+            $filtro[] = "fechaCreacion BETWEEN '$fechaInicio' AND '$fechaFin'";
+        }
+
+        $where = count($filtro) ? "WHERE " . implode(" AND ", $filtro) : "";
+
+        $query = "
+            SELECT COUNT(*) AS total
+            FROM `admanagerapiaccess-382213.UsuariosOPSA.UsuariosEvolok`
+            $where
+        ";
+
+        $results = $this->bigQuery->runQuery($this->bigQuery->query($query));
+
+        foreach ($results->rows() as $row) {
+            return intval($row['total']);
+        }
+
+        return 0;
+    }
+
+    public function obtenerSuscriptoresExportar($search, $fechaInicio, $fechaFin)
+    {
+        $filtro = [];
+
+        if ($search) {
+            $filtro[] = "LOWER(CONCAT(nombre,' ',apellido)) LIKE LOWER('%$search%')";
+        }
+        if ($fechaInicio && $fechaFin) {
+            $filtro[] = "fechaCreacion BETWEEN '$fechaInicio' AND '$fechaFin'";
+        }
+
+        $where = count($filtro) ? "WHERE " . implode(" AND ", $filtro) : "";
+
+        $query = "
+            SELECT *
+            FROM `admanagerapiaccess-382213.UsuariosOPSA.UsuariosEvolok`
+            $where
+            ORDER BY fechaCreacion
+        ";
+
+        $results = $this->bigQuery->runQuery($this->bigQuery->query($query));
+
+        return iterator_to_array($results->rows());
+    }
+
 }

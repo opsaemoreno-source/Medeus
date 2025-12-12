@@ -102,41 +102,125 @@ $(function () {
 // FUNCIÓN QUE GENERA LOS CHARTS
 // ============================
 
-function renderSuscriptoresCharts(estadisticas) {
+let incluirVacios = false;   // Estado global: incluir o excluir "Sin datos"
 
+const filtrar = (arr) => {
+    if (!arr) return [];
+    return incluirVacios ? arr : arr.filter(i => i.categoria !== 'Sin datos');
+};
+
+function renderSuscriptoresCharts(estadisticas) {
     if (!estadisticas) return;
 
-    // Helper para generar gráficos
-    const makeChart = (id, type, labels, values) => {
+    // Guardamos los datos "raw" para construir tabla después
+    window._suscriptoresData = estadisticas;
+
+    actualizarGraficos();
+    actualizarTabla();
+}
+
+function crearTabla(idContenedor, items) {
+    if (!items || !Array.isArray(items)) return;
+
+    let html = `
+        <table class="table table-bordered table-striped">
+            <thead class="table-dark">
+                <tr>
+                    <th>Categoría</th>
+                    <th>Total</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+
+    items.forEach(item => {
+        html += `
+            <tr>
+                <td>${item.categoria}</td>
+                <td>${item.total}</td>
+            </tr>
+        `;
+    });
+
+    html += `
+            </tbody>
+        </table>
+    `;
+
+    document.getElementById(idContenedor).innerHTML = html;
+}
+
+function renderSuscriptoresCharts(estadisticas) {
+    window._suscriptoresData = estadisticas;
+    actualizarGraficosYTablas();
+}
+
+function actualizarGraficosYTablas() {
+    const data = window._suscriptoresData;
+    if (!data) return;
+
+    const datasets = {
+        marca: filtrar(data.marca),
+        genero: filtrar(data.genero),
+        estadoCivil: filtrar(data.estadoCivil),
+        nivelEducativo: filtrar(data.nivelEducativo),
+        profesion: filtrar(data.profesion),
+        pais: filtrar(data.pais),
+        canal: filtrar(data.canal)
+    };
+
+    // Reiniciar los canvas para evitar duplicados
+    $('canvas').each(function () {
+        const newCanvas = $(this).clone();
+        $(this).replaceWith(newCanvas);
+    });
+
+    const makeChart = (id, type, items) => {
         const ctx = document.getElementById(id);
         if (!ctx) return;
 
         new Chart(ctx, {
             type: type,
             data: {
-                labels: labels,
+                labels: items.map(i => i.categoria),
                 datasets: [{
-                    data: values,
+                    data: items.map(i => i.total),
                     backgroundColor: [
-                        'rgba(54, 162, 235, 0.6)',
-                        'rgba(255, 99, 132, 0.6)',
-                        'rgba(255, 205, 86, 0.6)',
-                        'rgba(75, 192, 192, 0.6)',
-                        'rgba(153, 102, 255, 0.6)',
-                        'rgba(201, 203, 207, 0.6)'
+                        'rgba(54,162,235,0.6)',
+                        'rgba(255,99,132,0.6)',
+                        'rgba(255,205,86,0.6)',
+                        'rgba(75,192,192,0.6)',
+                        'rgba(153,102,255,0.6)',
+                        'rgba(201,203,207,0.6)'
                     ]
                 }]
             }
         });
     };
 
-    makeChart('chartMarca', 'doughnut', estadisticas.marca?.map(i => i.categoria), estadisticas.marca?.map(i => i.total));
-    makeChart('chartGenero', 'doughnut', estadisticas.genero?.map(i => i.categoria), estadisticas.genero?.map(i => i.total));
-    makeChart('chartEstadoCivil', 'bar', estadisticas.estadoCivil?.map(i => i.categoria), estadisticas.estadoCivil?.map(i => i.total));
-    makeChart('chartNivelEducativo', 'bar', estadisticas.nivelEducativo?.map(i => i.categoria), estadisticas.nivelEducativo?.map(i => i.total));
-    makeChart('chartProfesion', 'bar', estadisticas.profesion?.map(i => i.categoria), estadisticas.profesion?.map(i => i.total));
-    makeChart('chartPais', 'bar', estadisticas.pais?.map(i => i.categoria), estadisticas.pais?.map(i => i.total));
-    makeChart('chartCanal', 'bar', estadisticas.canal?.map(i => i.categoria), estadisticas.canal?.map(i => i.total));
+    // Gráficos individuales
+    makeChart('chartMarca', 'doughnut', datasets.marca);
+    makeChart('chartGenero', 'doughnut', datasets.genero);
+    makeChart('chartEstadoCivil', 'bar', datasets.estadoCivil);
+    makeChart('chartNivelEducativo', 'bar', datasets.nivelEducativo);
+    makeChart('chartProfesion', 'bar', datasets.profesion);
+    makeChart('chartPais', 'bar', datasets.pais);
+    makeChart('chartCanal', 'bar', datasets.canal);
+
+    // Tablas individuales
+    crearTabla("tablaMarca", datasets.marca);
+    crearTabla("tablaGenero", datasets.genero);
+    crearTabla("tablaEstadoCivil", datasets.estadoCivil);
+    crearTabla("tablaNivelEducativo", datasets.nivelEducativo);
+    crearTabla("tablaProfesion", datasets.profesion);
+    crearTabla("tablaPais", datasets.pais);
+    crearTabla("tablaCanal", datasets.canal);
 }
+
+$(document).on("click", "#toggleVacios", function () {
+    incluirVacios = !incluirVacios;
+    $(this).text(incluirVacios ? "Excluir datos vacíos" : "Incluir datos vacíos");
+    actualizarGraficosYTablas();
+});
 </script>
 @endsection

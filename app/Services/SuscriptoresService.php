@@ -72,7 +72,7 @@ class SuscriptoresService
 
         $query = "
             SELECT 
-                COALESCE($campo, 'Sin datos') as categoria,
+                COALESCE(NULLIF(TRIM($campo), ''), 'Sin datos') AS categoria,
                 COUNT(*) as total
             FROM `$datasetId.$tableId`
             GROUP BY categoria

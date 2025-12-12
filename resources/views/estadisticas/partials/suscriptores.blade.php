@@ -1,3 +1,8 @@
+<div class="d-flex justify-content-end mt-3">
+    <button id="toggleVacios" class="btn btn-dark btn-sm">
+        Incluir datos vacíos
+    </button>
+</div>
 {{-- PESTAÑAS DE GRÁFICOS --}}
 <ul class="nav nav-tabs" id="chartsTabs" role="tablist">
     <li class="nav-item">
@@ -50,11 +55,20 @@
         <div class="chart-wrapper">
             <canvas id="chartMarca"></canvas>
         </div>
+
+        <div class="mt-4">
+            <h5 class="fw-bold">Datos</h5>
+            <div id="tablaMarca"></div>
+        </div>
     </div>
 
     <div class="tab-pane fade" id="pane-genero">
         <div class="chart-wrapper">
             <canvas id="chartGenero"></canvas>
+        </div>
+        <div class="mt-4">
+            <h5 class="fw-bold">Datos</h5>
+            <div id="tablaGenero"></div>
         </div>
     </div>
 
@@ -62,11 +76,19 @@
         <div class="chart-wrapper">
             <canvas id="chartEstadoCivil"></canvas>
         </div>
+        <div class="mt-4">
+            <h5 class="fw-bold">Datos</h5>
+            <div id="tablaEstadoCivil"></div>
+        </div>
     </div>
 
     <div class="tab-pane fade" id="pane-educacion">
         <div class="chart-wrapper">
             <canvas id="chartNivelEducativo"></canvas>
+        </div>
+        <div class="mt-4">
+            <h5 class="fw-bold">Datos</h5>
+            <div id="tablaNivelEducativo"></div>
         </div>
     </div>
 
@@ -74,17 +96,29 @@
         <div class="chart-wrapper">
             <canvas id="chartProfesion"></canvas>
         </div>
+        <div class="mt-4">
+            <h5 class="fw-bold">Datos</h5>
+            <div id="tablaProfesion"></div>
+        </div>
     </div>
 
     <div class="tab-pane fade" id="pane-pais">
         <div class="chart-wrapper">
             <canvas id="chartPais"></canvas>
         </div>
+        <div class="mt-4">
+            <h5 class="fw-bold">Datos</h5>
+            <div id="tablaPais"></div>
+        </div>
     </div>
 
     <div class="tab-pane fade" id="pane-canal">
         <div class="chart-wrapper">
             <canvas id="chartCanal"></canvas>
+        </div>
+        <div class="mt-4">
+            <h5 class="fw-bold">Datos</h5>
+            <div id="tablaCanal"></div>
         </div>
     </div>
 
