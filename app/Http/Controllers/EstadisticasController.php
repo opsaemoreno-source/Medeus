@@ -28,13 +28,21 @@ class EstadisticasController extends Controller
     /**
      * Cargar parcial de suscriptores
      */
-    public function suscriptores()
+    public function suscriptores(Request $request)
     {
+        $fechaInicio = $request->query('fecha_inicio');
+        $fechaFin    = $request->query('fecha_fin');
+
         $service = new SuscriptoresService();
-        $estadisticas = $service->obtenerEstadisticas();
+        $estadisticas = $service->obtenerEstadisticas(
+            $fechaInicio,
+            $fechaFin
+        );
 
         return response()->json([
-            'html' => view('estadisticas.partials.suscriptores')->with('estadisticas', $estadisticas)->render(),
+            'html' => view('estadisticas.partials.suscriptores')
+                ->with('estadisticas', $estadisticas)
+                ->render(),
             'data' => $estadisticas
         ]);
     }

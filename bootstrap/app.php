@@ -11,11 +11,7 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-
-        // Trust Proxies (Laravel 12)
         $middleware->trustProxies(at: '*');
-
-        // Middleware de rutas personalizados
         $middleware->alias([
             'admin' => \App\Http\Middleware\AdminMiddleware::class,
         ]);

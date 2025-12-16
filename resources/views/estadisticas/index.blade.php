@@ -31,6 +31,13 @@
         <div class="col-md-9 col-lg-10 py-4" id="contenidoEstadisticas">
 
             <h3 class="mb-4">Seleccione una opción del menú</h3>
+            <div class="d-flex gap-2 mb-3">
+                <input type="date" id="fechaInicio" class="form-control form-control-sm" style="max-width: 180px;">
+                <input type="date" id="fechaFin" class="form-control form-control-sm" style="max-width: 180px;">
+                <button id="aplicarFiltroFecha" class="btn btn-sm btn-primary">
+                    Aplicar
+                </button>
+            </div>
 
             {{-- Loader --}}
             <div id="loader" class="text-center my-5" style="display: none;">
@@ -51,17 +58,34 @@
 @section('scripts')
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    window._filtroFechas = {
+    inicio: null,
+    fin: null
+};
 
+</script>
 <script>
 $(function () {
 
     // Función que carga el contenido dinámico
     function cargarEstadistica(url) {
+
+        const params = new URLSearchParams();
+        if (window._filtroFechas?.inicio && window._filtroFechas?.fin) {
+            params.append('fecha_inicio', window._filtroFechas.inicio);
+            params.append('fecha_fin', window._filtroFechas.fin);
+        }
+
+        const finalUrl = params.toString()
+            ? `${url}?${params.toString()}`
+            : url;
+
         $("#panelData").empty();
         $("#loader").fadeIn(150);
 
         $.ajax({
-            url: url,
+            url: finalUrl,
             method: "GET",
             success: function (response) {
 
@@ -95,7 +119,17 @@ $(function () {
     $("#btnSuscriptores").click(() => cargarEstadistica("/estadisticas/suscriptores"));
     $("#btnAvanzado").click(() => cargarEstadistica("/estadisticas/avanzado"));
 
+    $("#aplicarFiltroFecha").on("click", function () {
+        window._filtroFechas.inicio = $("#fechaInicio").val();
+        window._filtroFechas.fin    = $("#fechaFin").val();
+
+        // Recargar estadísticas activas
+        cargarEstadistica("/estadisticas/suscriptores");
+    });
+
 });
+
+
 
 
 // ============================
