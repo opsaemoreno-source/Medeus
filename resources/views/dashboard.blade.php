@@ -59,7 +59,7 @@
         @if(Auth::user() && Auth::user()->is_admin == 1)
         <div class="col-md-4">
             <a href="{{ route('users.index') }}" class="text-decoration-none">
-                <div class="card text-white shadow-sm h-100" style="background-color: #f3ce85; border-radius: 12px;">
+                <div class="card shadow-sm h-100" style="background-color: #F1F5FC; border-radius: 12px; color: #555;">
                     <div class="card-body d-flex flex-column justify-content-between p-4">
                         <h3 class="fw-bold mb-2">Usuarios</h3>
                         <p class="mb-0">Ver listado de usuarios registrados</p>
