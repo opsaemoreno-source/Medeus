@@ -5,6 +5,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\EncuestasController;
 use App\Http\Controllers\SuscriptoresController;
 use App\Http\Controllers\EstadisticasController;
+use App\Http\Controllers\ComprasController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
@@ -68,5 +69,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/estadisticas/suscriptores', [EstadisticasController::class, 'suscriptores']);
     Route::get('/estadisticas/avanzado', [EstadisticasController::class, 'avanzado']);
 });
+
+Route::get('/compras', [ComprasController::class, 'index'])
+    ->name('compras.index');
+
+Route::get('/compras/data', [ComprasController::class, 'data'])
+    ->name('compras.data');
 
 require __DIR__.'/auth.php';

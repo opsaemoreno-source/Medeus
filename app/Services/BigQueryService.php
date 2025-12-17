@@ -160,13 +160,10 @@ class BigQueryService
 
         $estadistica = [];
         foreach ($results->rows() as $row) {
-            // Convertir a string plano
             $fecha = $row['fecha'];
             if (is_object($fecha) && method_exists($fecha, 'format')) {
-                // Si es DateTime
                 $fecha = $fecha->format('Y-m-d');
             } elseif (is_object($fecha)) {
-                // Para objetos de BigQuery DATE o Timestamp
                 $fecha = (string) $fecha;
             }
 

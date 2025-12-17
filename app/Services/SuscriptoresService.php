@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use Google\Cloud\BigQuery\BigQueryClient;
-use Exception;
+use Exception; 
 
 class SuscriptoresService
 {
