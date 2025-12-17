@@ -10,6 +10,16 @@
         <div class="card-body">
             <form id="filtrosCompras" class="row g-3">
 
+                <div class="col-md-3">
+                    <label class="form-label">Fecha inicio</label>
+                    <input type="date" name="fecha_inicio" class="form-control">
+                </div>
+
+                <div class="col-md-3">
+                    <label class="form-label">Fecha fin</label>
+                    <input type="date" name="fecha_fin" class="form-control">
+                </div>
+
                 {{-- Estado --}}
                 <div class="col-md-2">
                     <label class="form-label">Estado</label>
@@ -56,16 +66,6 @@
                         <option value="CARD">Tarjeta Débito/Crédito</option>
                         <option value="CASH">Efectivo</option>
                     </select>
-                </div>
-
-                <div class="col-md-2">
-                    <label class="form-label">Fecha inicio</label>
-                    <input type="date" name="fecha_inicio" class="form-control">
-                </div>
-
-                <div class="col-md-2">
-                    <label class="form-label">Fecha fin</label>
-                    <input type="date" name="fecha_fin" class="form-control">
                 </div>
 
                 {{-- Búsqueda --}}
