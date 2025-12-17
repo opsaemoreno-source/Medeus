@@ -31,6 +31,18 @@
             </a>
         </div>
 
+        <!-- Tarjeta: Compras -->
+        <div class="col-md-4">
+            <a href="{{ route('compras.index') }}" class="text-decoration-none">
+                <div class="card text-white shadow-sm h-100" style="background-color: #f3ce85; border-radius: 12px;">
+                    <div class="card-body d-flex flex-column justify-content-between p-4">
+                        <h3 class="fw-bold mb-2">Compras</h3>
+                        <p class="mb-0">Ver registro de compras efectuadas</p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
         <!-- Tarjeta: Estadísticas -->
         <div class="col-md-4">
             <a href="{{ route('estadisticas.index') }}" class="text-decoration-none">
@@ -38,18 +50,6 @@
                     <div class="card-body d-flex flex-column justify-content-between p-4">
                         <h3 class="fw-bold mb-2">Estadísticas</h3>
                         <p class="mb-0">Ver estadísticas en base a los datos existentes</p>
-                    </div>
-                </div>
-            </a>
-        </div>
-
-        <!-- Tarjeta: Usuarios -->
-        <div class="col-md-4">
-            <a href="{{ route('compras.index') }}" class="text-decoration-none">
-                <div class="card text-white shadow-sm h-100" style="background-color: #f3ce85; border-radius: 12px;">
-                    <div class="card-body d-flex flex-column justify-content-between p-4">
-                        <h3 class="fw-bold mb-2">Compras</h3>
-                        <p class="mb-0">Ver registro de compras efectuadas</p>
                     </div>
                 </div>
             </a>
