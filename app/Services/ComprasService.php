@@ -42,7 +42,7 @@ class ComprasService
                 proximaFechaPago
             FROM `admanagerapiaccess-382213.UsuariosOPSA.Compras`
             $where
-            ORDER BY fechaCreacion DESC
+            ORDER BY fechaInicioSuscripcion DESC
         ";
 
         $query = $this->bigQuery->query($sql);
@@ -116,21 +116,26 @@ class ComprasService
     {
         $conditions = [];
 
-        if ($filtros['estado']) {
+        if (!empty($filtros['estado'])) {
             $conditions[] = "estado = '{$filtros['estado']}'";
         }
 
-        if ($filtros['marca']) {
+        if (!empty($filtros['marca'])) {
             $conditions[] = "marca = '{$filtros['marca']}'";
         }
 
-        if ($filtros['canal']) {
+        if (!empty($filtros['canal'])) {
             $conditions[] = "canal = '{$filtros['canal']}'";
         }
 
-        if ($filtros['search']) {
-            $search = $filtros['search'];
-            $conditions[] = "(idUsuario LIKE '%$search%' OR idCompra LIKE '%$search%')";
+        if (!empty($filtros['tipoPago'])) {
+            $conditions[] = "tipoPago = '{$filtros['tipoPago']}'";
+        }
+
+        if (!empty($filtros['search'])) {
+            $search = addslashes($filtros['search']);
+            $conditions[] = "(CAST(idUsuario AS STRING) LIKE '%$search%' 
+                            OR CAST(idCompra AS STRING) LIKE '%$search%')";
         }
         
         if (!empty($filtros['fechaInicio'])) {
@@ -139,6 +144,14 @@ class ComprasService
 
         if (!empty($filtros['fechaFin'])) {
             $conditions[] = "fechaInicioSuscripcion <= '{$filtros['fechaFin']} 23:59:59'";
+        }
+
+        if (!empty($filtros['producto'])) {
+            $conditions[] = "nombreProductoDisplay = '{$filtros['producto']}'";
+        }
+
+        if (!empty($filtros['plan'])) {
+            $conditions[] = "nombrePlanPagoDisplay = '{$filtros['plan']}'";
         }
 
         return count($conditions)
