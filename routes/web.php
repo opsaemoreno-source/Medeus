@@ -21,21 +21,6 @@ Route::get('/dashboard', function () {
     return view('dashboard');
 })->middleware(['auth', 'verified'])->name('dashboard');
 
-Route::middleware('auth')->group(function () {
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-});
-
-Route::middleware(['auth'])->group(function () {
-    Route::resource('users', UserController::class);
-});
-
-Route::middleware(['auth'])->group(function () {
-    Route::get('/encuestas', [EncuestasController::class, 'index'])->name('encuestas.index');
-    Route::post('/encuestas/procesar', [EncuestasController::class, 'procesar'])->name('encuestas.procesar');
-});
-
 Route::get('/suscriptores', [SuscriptoresController::class, 'index'])
     ->middleware('auth')
     ->name('suscriptores.index');
@@ -53,6 +38,17 @@ Route::get('/suscriptores/exportar', [SuscriptoresController::class, 'exportar']
 
 
 Route::middleware(['auth'])->group(function () {
+
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('password.update');
+    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+
+    Route::resource('users', UserController::class);
+
+    Route::get('/encuestas', [EncuestasController::class, 'index'])->name('encuestas.index');
+    Route::post('/encuestas/procesar', [EncuestasController::class, 'procesar'])->name('encuestas.procesar');
+
     Route::get('/estadisticas', function () {
         return view('estadisticas.index');
     })->name('estadisticas.index');

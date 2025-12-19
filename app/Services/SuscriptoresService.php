@@ -53,6 +53,7 @@ class SuscriptoresService
                     $fechaFin
                 ),
                 'pais'            => $this->queryCountSimple('pais', $fechaInicio, $fechaFin),
+                'ciudad'          => $this->queryCountSimple('ciudad', $fechaInicio, $fechaFin),
                 'canal'           => $this->queryCountSimple('canal', $fechaInicio, $fechaFin),
             ];
         } catch (Exception $e) {

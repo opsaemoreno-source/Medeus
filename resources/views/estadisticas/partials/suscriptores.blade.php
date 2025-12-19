@@ -1,8 +1,3 @@
-<div class="d-flex justify-content-end mt-3">
-    <button id="toggleVacios" class="btn btn-dark btn-sm">
-        Incluir datos vacíos
-    </button>
-</div>
 {{-- PESTAÑAS DE GRÁFICOS --}}
 <ul class="nav nav-tabs" id="chartsTabs" role="tablist">
     <li class="nav-item">
@@ -42,6 +37,12 @@
     </li>
 
     <li class="nav-item">
+        <button class="nav-link" id="tab-ciudad" data-bs-toggle="tab" data-bs-target="#pane-ciudad" type="button">
+            Ciudad
+        </button>
+    </li>
+
+    <li class="nav-item">
         <button class="nav-link" id="tab-canal" data-bs-toggle="tab" data-bs-target="#pane-canal" type="button">
             Canal
         </button>
@@ -52,6 +53,13 @@
 <div class="tab-content mt-4">
 
     <div class="tab-pane fade show active" id="pane-marca">
+        <div class="d-flex justify-content-end mb-2">
+            <button class="btn btn-dark btn-sm toggle-vacios"
+                    data-key="marca">
+                Incluir datos vacíos
+            </button>
+        </div>
+
         <div class="chart-wrapper">
             <canvas id="chartMarca"></canvas>
         </div>
@@ -63,6 +71,12 @@
     </div>
 
     <div class="tab-pane fade" id="pane-genero">
+        <div class="d-flex justify-content-end mb-2">
+            <button class="btn btn-dark btn-sm toggle-vacios"
+                    data-key="genero">
+                Incluir datos vacíos
+            </button>
+        </div>
         <div class="chart-wrapper">
             <canvas id="chartGenero"></canvas>
         </div>
@@ -73,6 +87,12 @@
     </div>
 
     <div class="tab-pane fade" id="pane-estado">
+        <div class="d-flex justify-content-end mb-2">
+            <button class="btn btn-dark btn-sm toggle-vacios"
+                    data-key="estadoCivil">
+                Incluir datos vacíos
+            </button>
+        </div>
         <div class="chart-wrapper">
             <canvas id="chartEstadoCivil"></canvas>
         </div>
@@ -83,6 +103,12 @@
     </div>
 
     <div class="tab-pane fade" id="pane-educacion">
+        <div class="d-flex justify-content-end mb-2">
+            <button class="btn btn-dark btn-sm toggle-vacios"
+                    data-key="educacion">
+                Incluir datos vacíos
+            </button>
+        </div>
         <div class="chart-wrapper">
             <canvas id="chartNivelEducativo"></canvas>
         </div>
@@ -93,6 +119,12 @@
     </div>
 
     <div class="tab-pane fade" id="pane-profesion">
+        <div class="d-flex justify-content-end mb-2">
+            <button class="btn btn-dark btn-sm toggle-vacios"
+                    data-key="profesion">
+                Incluir datos vacíos
+            </button>
+        </div>
         <div class="chart-wrapper">
             <canvas id="chartProfesion"></canvas>
         </div>
@@ -103,6 +135,12 @@
     </div>
 
     <div class="tab-pane fade" id="pane-pais">
+        <div class="d-flex justify-content-end mb-2">
+            <button class="btn btn-dark btn-sm toggle-vacios"
+                    data-key="pais">
+                Incluir datos vacíos
+            </button>
+        </div>
         <div class="chart-wrapper">
             <canvas id="chartPais"></canvas>
         </div>
@@ -112,7 +150,31 @@
         </div>
     </div>
 
+    <div class="tab-pane fade" id="pane-ciudad">
+        <div class="d-flex justify-content-end mb-2">
+            <button class="btn btn-dark btn-sm toggle-vacios"
+                    data-key="ciudad">
+                Incluir datos vacíos
+            </button>
+        </div>
+
+        <div class="chart-wrapper">
+            <canvas id="chartCiudad"></canvas>
+        </div>
+
+        <div class="mt-4">
+            <h5 class="fw-bold">Datos</h5>
+            <div id="tablaCiudad"></div>
+        </div>
+    </div>
+
     <div class="tab-pane fade" id="pane-canal">
+        <div class="d-flex justify-content-end mb-2">
+            <button class="btn btn-dark btn-sm toggle-vacios"
+                    data-key="canal">
+                Incluir datos vacíos
+            </button>
+        </div>
         <div class="chart-wrapper">
             <canvas id="chartCanal"></canvas>
         </div>

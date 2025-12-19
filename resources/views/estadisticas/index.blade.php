@@ -59,9 +59,16 @@
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    window._filtroFechas = {
-    inicio: null,
-    fin: null
+
+window._filtrosFechas = {
+    marca: { inicio: null, fin: null },
+    genero: { inicio: null, fin: null },
+    estadoCivil: { inicio: null, fin: null },
+    educacion: { inicio: null, fin: null },
+    profesion: { inicio: null, fin: null },
+    pais: { inicio: null, fin: null },
+    ciudad: { inicio: null, fin: null },
+    canal: { inicio: null, fin: null }
 };
 
 </script>
@@ -72,9 +79,13 @@ $(function () {
     function cargarEstadistica(url) {
 
         const params = new URLSearchParams();
-        if (window._filtroFechas?.inicio && window._filtroFechas?.fin) {
-            params.append('fecha_inicio', window._filtroFechas.inicio);
-            params.append('fecha_fin', window._filtroFechas.fin);
+        const key = window._pestaniaActiva;
+
+        const fechas = window._filtrosFechas[key];
+
+        if (fechas?.inicio && fechas?.fin) {
+            params.append('fecha_inicio', fechas.inicio);
+            params.append('fecha_fin', fechas.fin);
         }
 
         const finalUrl = params.toString()
@@ -91,28 +102,16 @@ $(function () {
 
                 $("#loader").fadeOut(150);
 
-                // Si la respuesta contiene HTML
-                if (response.html) {
-                    $("#panelData").html(response.html);
-                } else {
-                    $("#panelData").html("<pre>" + JSON.stringify(response, null, 2) + "</pre>");
-                }
+                $("#panelData").html(response.html);
 
-                // Si vienen datos para los charts
                 if (response.data) {
-                    renderSuscriptoresCharts(response.data);
+                    window._suscriptoresData = response.data;
+                    actualizarGraficosYTablas();
                 }
-            },
-            error: function () {
-                $("#loader").hide();
-                $("#panelData").html(`
-                    <div class='alert alert-danger mt-4'>
-                        Error al cargar los datos.
-                    </div>
-                `);
             }
         });
     }
+
 
     // Botones del menú
     $("#btnEncuestas").click(() => cargarEstadistica("/estadisticas/encuestas"));
@@ -120,27 +119,42 @@ $(function () {
     $("#btnAvanzado").click(() => cargarEstadistica("/estadisticas/avanzado"));
 
     $("#aplicarFiltroFecha").on("click", function () {
-        window._filtroFechas.inicio = $("#fechaInicio").val();
-        window._filtroFechas.fin    = $("#fechaFin").val();
 
-        // Recargar estadísticas activas
+        const key = window._pestaniaActiva;
+
+        if (!window._filtrosFechas[key]) {
+            window._filtrosFechas[key] = { inicio: null, fin: null };
+        }
+
+        window._filtrosFechas[key].inicio = $("#fechaInicio").val();
+        window._filtrosFechas[key].fin    = $("#fechaFin").val();
+
+        // Vuelve a consultar backend
         cargarEstadistica("/estadisticas/suscriptores");
     });
 
 });
 
-
-
-
 // ============================
 // FUNCIÓN QUE GENERA LOS CHARTS
 // ============================
 
-let incluirVacios = false;   // Estado global: incluir o excluir "Sin datos"
+window._filtrosVacios = {
+    marca: false,
+    genero: false,
+    estadoCivil: false,
+    educacion: false,
+    profesion: false,
+    pais: false,
+    ciudad: false,
+    canal: false
+};
 
-const filtrar = (arr) => {
+const filtrar = (arr, clave) => {
     if (!arr) return [];
-    return incluirVacios ? arr : arr.filter(i => i.categoria !== 'Sin datos');
+    return window._filtrosVacios[clave]
+        ? arr
+        : arr.filter(i => i.categoria !== 'Sin datos');
 };
 
 function renderSuscriptoresCharts(estadisticas) {
@@ -194,13 +208,14 @@ function actualizarGraficosYTablas() {
     if (!data) return;
 
     const datasets = {
-        marca: filtrar(data.marca),
-        genero: filtrar(data.genero),
-        estadoCivil: filtrar(data.estadoCivil),
-        nivelEducativo: filtrar(data.nivelEducativo),
-        profesion: filtrar(data.profesion),
-        pais: filtrar(data.pais),
-        canal: filtrar(data.canal)
+        marca: filtrar(data.marca, 'marca'),
+        genero: filtrar(data.genero, 'genero'),
+        estadoCivil: filtrar(data.estadoCivil, 'estadoCivil'),
+        nivelEducativo: filtrar(data.nivelEducativo, 'nivelEducativo'),
+        profesion: filtrar(data.profesion, 'profesion'),
+        pais: filtrar(data.pais, 'pais'),
+        ciudad: filtrar(data.ciudad, 'ciudad'), 
+        canal: filtrar(data.canal, 'canal')
     };
 
     // Reiniciar los canvas para evitar duplicados
@@ -239,6 +254,7 @@ function actualizarGraficosYTablas() {
     makeChart('chartNivelEducativo', 'bar', datasets.nivelEducativo);
     makeChart('chartProfesion', 'bar', datasets.profesion);
     makeChart('chartPais', 'bar', datasets.pais);
+    makeChart('chartCiudad', 'bar', datasets.ciudad);
     makeChart('chartCanal', 'bar', datasets.canal);
 
     // Tablas individuales
@@ -248,13 +264,30 @@ function actualizarGraficosYTablas() {
     crearTabla("tablaNivelEducativo", datasets.nivelEducativo);
     crearTabla("tablaProfesion", datasets.profesion);
     crearTabla("tablaPais", datasets.pais);
+    crearTabla("tablaCiudad", datasets.ciudad);
     crearTabla("tablaCanal", datasets.canal);
 }
 
-$(document).on("click", "#toggleVacios", function () {
-    incluirVacios = !incluirVacios;
-    $(this).text(incluirVacios ? "Excluir datos vacíos" : "Incluir datos vacíos");
+$(document).on("click", ".toggle-vacios", function () {
+    const key = $(this).data('key');
+    window._filtrosVacios[key] = !window._filtrosVacios[key];
+    $(this).text(
+        window._filtrosVacios[key]
+            ? "Excluir datos vacíos"
+            : "Incluir datos vacíos"
+    );
+    // Solo redibuja todo con el nuevo estado
     actualizarGraficosYTablas();
 });
+
+$(document).on('shown.bs.tab', 'button[data-bs-toggle="tab"]', function (e) {
+    window._pestaniaActiva = e.target.id.replace('tab-', '');
+
+    const fechas = window._filtrosFechas[window._pestaniaActiva];
+
+    $("#fechaInicio").val(fechas.inicio);
+    $("#fechaFin").val(fechas.fin);
+});
+
 </script>
 @endsection
