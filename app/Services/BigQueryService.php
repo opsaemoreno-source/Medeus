@@ -7,6 +7,8 @@ use Google\Cloud\BigQuery\BigQueryClient;
 class BigQueryService
 {
     protected $bigQuery;
+    protected $tablaUsuarios;
+    protected $tablaEncuestas;
 
     public function __construct()
     {
@@ -14,6 +16,8 @@ class BigQueryService
             'projectId' => env('GOOGLE_PROJECT_ID'),
             'keyFilePath' => storage_path('app/google/bigquery.json')
         ]);
+        $this->tablaUsuarios = "`admanagerapiaccess-382213.UsuariosOPSA.UsuariosEvolok`";
+        $this->tablaEncuestas = "`admanagerapiaccess-382213.UsuariosOPSA.EncuestasTypeform`";
     }
 
     public function obtenerEncuestas()
@@ -26,7 +30,7 @@ class BigQueryService
                 fechaPublicacion,
                 noCampos,
                 noRespuestas
-            FROM `admanagerapiaccess-382213.UsuariosOPSA.EncuestasTypeform`
+            FROM $this->tablaEncuestas
         ";
 
         $queryJob = $this->bigQuery->query($query);
@@ -46,7 +50,7 @@ class BigQueryService
                 telefono,
                 suscripcionActiva, 
                 estado
-            FROM `admanagerapiaccess-382213.UsuariosOPSA.UsuariosEvolok`
+            FROM $this->tablaUsuarios
             ORDER BY nombre_completo
         ";
 
@@ -80,7 +84,7 @@ class BigQueryService
                 telefono,
                 suscripcionActiva, 
                 estado
-            FROM `admanagerapiaccess-382213.UsuariosOPSA.UsuariosEvolok`
+            FROM $this->tablaUsuarios
             $filter
             ORDER BY nombre_completo
             LIMIT $length OFFSET $start
@@ -110,7 +114,7 @@ class BigQueryService
 
         $query = "
             SELECT COUNT(*) AS total
-            FROM `admanagerapiaccess-382213.UsuariosOPSA.UsuariosEvolok`
+            FROM $this->tablaUsuarios
             $filter
         ";
 
@@ -128,7 +132,7 @@ class BigQueryService
     {
         $query = "
             SELECT COUNT(*) AS total
-            FROM `admanagerapiaccess-382213.UsuariosOPSA.UsuariosEvolok`
+            FROM $this->tablaUsuarios
         ";
 
         $results = $this->bigQuery->runQuery($this->bigQuery->query($query));
@@ -150,7 +154,7 @@ class BigQueryService
             SELECT 
                 DATE(fechaCreacion) AS fecha,
                 COUNT(*) AS total
-            FROM `admanagerapiaccess-382213.UsuariosOPSA.UsuariosEvolok`
+            FROM $this->tablaUsuarios
             $filtro
             GROUP BY fecha
             ORDER BY fecha ASC
@@ -198,7 +202,7 @@ class BigQueryService
                 telefono,
                 suscripcionActiva,
                 estado
-            FROM `admanagerapiaccess-382213.UsuariosOPSA.UsuariosEvolok`
+            FROM $this->tablaUsuarios
             $where
             ORDER BY nombre_completo
             LIMIT $length OFFSET $start
@@ -237,7 +241,7 @@ class BigQueryService
 
         $query = "
             SELECT COUNT(*) AS total
-            FROM `admanagerapiaccess-382213.UsuariosOPSA.UsuariosEvolok`
+            FROM $this->tablaUsuarios
             $where
         ";
 
@@ -265,7 +269,7 @@ class BigQueryService
 
         $query = "
             SELECT *
-            FROM `admanagerapiaccess-382213.UsuariosOPSA.UsuariosEvolok`
+            FROM $this->tablaUsuarios
             $where
             ORDER BY fechaCreacion
         ";

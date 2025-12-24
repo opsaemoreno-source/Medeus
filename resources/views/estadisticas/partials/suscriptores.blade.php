@@ -151,11 +151,19 @@
     </div>
 
     <div class="tab-pane fade" id="pane-ciudad">
-        <div class="d-flex justify-content-end mb-2">
-            <button class="btn btn-dark btn-sm toggle-vacios"
-                    data-key="ciudad">
-                Incluir datos vacíos
-            </button>
+        <div class="d-flex justify-content-between mb-2">
+            <div>
+                <button class="btn btn-dark btn-sm toggle-vacios"
+                        data-key="ciudad">
+                    Incluir datos vacíos
+                </button>
+            </div>
+            <div>
+                <select id="modoCiudadSelect" class="form-select form-select-sm">
+                    <option value="normalizado" {{ ($modoCiudad ?? 'normalizado') == 'normalizado' ? 'selected' : '' }}>Normalizado</option>
+                    <option value="original" {{ ($modoCiudad ?? '') == 'original' ? 'selected' : '' }}>Original</option>
+                </select>
+            </div>
         </div>
 
         <div class="chart-wrapper">

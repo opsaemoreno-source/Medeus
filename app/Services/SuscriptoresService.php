@@ -159,4 +159,52 @@ class SuscriptoresService
 
         return $result;
     }
+
+    public function obtenerSuscriptoresPorCiudad(
+        string $modo = 'normalizado',
+        ?string $fechaInicio = null,
+        ?string $fechaFin = null
+    ): array
+    {
+        $tabla = $modo === 'original'
+            ? '`UsuariosOPSA.UsuariosEvolok`'
+            : '`UsuariosOPSA.normalizado_UsuariosEvolok`';
+
+        $campoCiudad = $modo === 'original'
+            ? 'ciudad'
+            : 'ciudad_hibrida';
+
+        $where = [];
+
+        if ($fechaInicio && $fechaFin) {
+            $where[] = "fechaCreacion BETWEEN TIMESTAMP('$fechaInicio') AND TIMESTAMP('$fechaFin')";
+        }
+
+        $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
+
+        $sql = "
+            SELECT
+                $campoCiudad AS categoria,
+                COUNT(*) AS total
+            FROM $tabla
+            $whereSql
+            GROUP BY categoria
+            ORDER BY total DESC
+        ";
+
+        $queryConfig  = $this->bigQuery->query($sql);
+        $queryResults = $this->bigQuery->runQuery($queryConfig);    
+
+        $resultado = [];
+
+        foreach ($queryResults as $row) {
+            $resultado[] = [
+                'categoria' => $row['categoria'],
+                'total'     => (int) $row['total'],
+            ];
+        }
+
+        return $resultado;
+    }
+
 }

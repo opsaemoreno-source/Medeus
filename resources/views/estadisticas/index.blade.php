@@ -80,12 +80,16 @@ $(function () {
 
         const params = new URLSearchParams();
         const key = window._pestaniaActiva;
-
         const fechas = window._filtrosFechas[key];
 
         if (fechas?.inicio && fechas?.fin) {
             params.append('fecha_inicio', fechas.inicio);
             params.append('fecha_fin', fechas.fin);
+        }
+
+        if (key === 'ciudad') {
+            const modo = $('#modoCiudadSelect').val();
+            params.append('modo_ciudad', modo);
         }
 
         const finalUrl = params.toString()
@@ -111,6 +115,10 @@ $(function () {
             }
         });
     }
+
+    $(document).on('change', '#modoCiudadSelect', function() {
+        cargarEstadistica("/estadisticas/suscriptores");
+    });
 
 
     // Botones del menú
@@ -152,10 +160,14 @@ window._filtrosVacios = {
 
 const filtrar = (arr, clave) => {
     if (!arr) return [];
-    return window._filtrosVacios[clave]
-        ? arr
-        : arr.filter(i => i.categoria !== 'Sin datos');
+    if (window._filtrosVacios[clave]) return arr;
+
+    return arr.filter(i => {
+        const cat = (i.categoria ?? '').toString().trim();
+        return cat !== '' && cat.toLowerCase() !== 'sin datos';
+    });
 };
+
 
 function renderSuscriptoresCharts(estadisticas) {
     if (!estadisticas) return;

@@ -32,9 +32,15 @@ class EstadisticasController extends Controller
     {
         $fechaInicio = $request->query('fecha_inicio');
         $fechaFin    = $request->query('fecha_fin');
+        $modoCiudad  = $request->query('modo_ciudad', 'normalizado');
 
         $service = new SuscriptoresService();
         $estadisticas = $service->obtenerEstadisticas(
+            $fechaInicio,
+            $fechaFin
+        );
+        $estadisticas['ciudad'] = $service->obtenerSuscriptoresPorCiudad(
+            $modoCiudad,
             $fechaInicio,
             $fechaFin
         );
@@ -42,6 +48,7 @@ class EstadisticasController extends Controller
         return response()->json([
             'html' => view('estadisticas.partials.suscriptores')
                 ->with('estadisticas', $estadisticas)
+                ->with('modoCiudad', $modoCiudad)
                 ->render(),
             'data' => $estadisticas
         ]);
