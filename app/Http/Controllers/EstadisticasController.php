@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 use App\Services\SuscriptoresService;
+use App\Services\ComprasService;
 
 use Illuminate\Http\Request;
 
@@ -22,6 +23,25 @@ class EstadisticasController extends Controller
     {
         return response()->json([
             'html' => view('estadisticas.partials.encuestas')->render()
+        ]);
+    }
+
+    /**
+     * Cargar parcial de compras
+     */
+    public function compras(Request $request)
+    {
+        $filtros = [
+            'fechaInicio' => $request->query('fecha_inicio'),
+            'fechaFin'    => $request->query('fecha_fin'),
+        ];
+
+        $service = new ComprasService();
+        $estadisticas = $service->obtenerEstadisticasCompras($filtros);
+
+        return response()->json([
+            'html' => view('estadisticas.partials.compras')->render(),
+            'data' => $estadisticas
         ]);
     }
 

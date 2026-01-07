@@ -61,6 +61,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/estadisticas/encuestas', [EstadisticasController::class, 'encuestas']);
     Route::get('/estadisticas/suscriptores', [EstadisticasController::class, 'suscriptores']);
     Route::get('/estadisticas/avanzado', [EstadisticasController::class, 'avanzado']);
+    Route::get('/estadisticas/compras', [EstadisticasController::class, 'compras']);
 
     Route::get('/compras', [ComprasController::class, 'index'])
         ->name('compras.index');

@@ -158,4 +158,101 @@ class ComprasService
             ? 'WHERE ' . implode(' AND ', $conditions)
             : '';
     }
+
+    public function obtenerEstadisticasCompras(array $filtros): array
+    {
+        // FORZAR solo ACTIVE
+        $filtros['estado'] = 'ACTIVE';
+        $where = $this->buildWhere($filtros);
+
+        $sql = "
+            SELECT
+                idMoneda,
+                DATE(fechaInicioSuscripcion) AS dia,
+                nombreProductoDisplay AS producto,
+                estado,
+                marca,
+                canal,
+
+                COUNT(*) AS cantidad,
+                SUM(IFNULL(precioFinal, 0)) AS valor
+
+            FROM `admanagerapiaccess-382213.UsuariosOPSA.Compras`
+            $where
+            GROUP BY idMoneda, dia, producto, estado, marca, canal
+            ORDER BY dia ASC
+        ";
+
+        $query = $this->bigQuery->query($sql);
+        $rows  = iterator_to_array($this->bigQuery->runQuery($query));
+
+        return $this->mapEstadisticasCompras($rows);
+    }
+
+    protected function mapEstadisticasCompras(array $rows): array
+    {
+        $resultado = [];
+
+        foreach ($rows as $row) {
+            $moneda = $row['idMoneda'] ?? 'UNKNOWN';
+
+            if (!isset($resultado[$moneda])) {
+                $resultado[$moneda] = [
+                    'cantidad' => [
+                        'porDia'      => [],
+                        'porProducto' => [],
+                        'porEstado'   => [],
+                        'porMarca'    => [],
+                        'porCanal'    => [],
+                    ],
+                    'valor' => [
+                        'porDia'      => [],
+                        'porProducto' => [],
+                        'porEstado'   => [],
+                        'porMarca'    => [],
+                        'porCanal'    => [],
+                    ],
+                ];
+            }
+
+            // =========================
+            // CANTIDAD
+            // =========================
+            $this->sumar($resultado[$moneda]['cantidad']['porDia'],      $row['dia'],      $row['cantidad']);
+            $this->sumar($resultado[$moneda]['cantidad']['porProducto'], $row['producto'], $row['cantidad']);
+            $this->sumar($resultado[$moneda]['cantidad']['porEstado'],   $row['estado'],   $row['cantidad']);
+            $this->sumar($resultado[$moneda]['cantidad']['porMarca'],    $row['marca'],    $row['cantidad']);
+            $this->sumar($resultado[$moneda]['cantidad']['porCanal'],    $row['canal'],    $row['cantidad']);
+
+            // =========================
+            // VALOR
+            // =========================
+            $valor = is_numeric($row['valor']) ? (float)$row['valor'] : 0.0;
+
+            $this->sumar($resultado[$moneda]['valor']['porDia'],      $row['dia'],      $valor);
+            $this->sumar($resultado[$moneda]['valor']['porProducto'], $row['producto'], $valor);
+            $this->sumar($resultado[$moneda]['valor']['porEstado'],   $row['estado'],   $valor);
+            $this->sumar($resultado[$moneda]['valor']['porMarca'],    $row['marca'],    $valor);
+            $this->sumar($resultado[$moneda]['valor']['porCanal'],    $row['canal'],    $valor);
+        }
+
+        return $resultado;
+    }
+
+    protected function sumar(array &$arr, $categoria, $valor): void
+    {
+        if (is_object($categoria) && method_exists($categoria, 'format')) {
+            $categoria = $categoria->format('Y-m-d');
+        }
+
+        $categoria = trim((string)$categoria);
+        if ($categoria === '') {
+            $categoria = 'Sin datos';
+        }
+
+        $valor = is_numeric($valor) ? $valor : 0;
+
+        $arr[$categoria] = ($arr[$categoria] ?? 0) + $valor;
+    }
+
 }

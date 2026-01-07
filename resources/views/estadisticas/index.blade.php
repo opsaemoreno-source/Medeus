@@ -17,7 +17,11 @@
                 </button>
 
                 <button class="list-group-item list-group-item-action py-3" id="btnSuscriptores">
-                    Suscriptores
+                    Usuarios
+                </button>
+
+                <button class="list-group-item list-group-item-action py-3" id="btnCompras">
+                    Compras
                 </button>
 
                 <button class="list-group-item list-group-item-action py-3" id="btnAvanzado">
@@ -68,8 +72,22 @@ window._filtrosFechas = {
     profesion: { inicio: null, fin: null },
     pais: { inicio: null, fin: null },
     ciudad: { inicio: null, fin: null },
-    canal: { inicio: null, fin: null }
+    canal: { inicio: null, fin: null },
+    suscriptores: { inicio: null, fin: null },
+    compras: { inicio: null, fin: null }
 };
+
+window._chartsCompras = {
+    porDia: null,
+    porProducto: null,
+    porEstado: null,
+    porMarca: null,
+    porCanal: null
+};
+
+window._chartsSuscriptores = {};
+
+window._modoCompras = 'cantidad'; // cantidad | valor
 
 </script>
 <script>
@@ -103,28 +121,50 @@ $(function () {
             url: finalUrl,
             method: "GET",
             success: function (response) {
-
                 $("#loader").fadeOut(150);
-
                 $("#panelData").html(response.html);
 
-                if (response.data) {
+                if (!response.data) return;
+
+                if (window._pestaniaActiva === 'suscriptores') {
                     window._suscriptoresData = response.data;
                     actualizarGraficosYTablas();
+                }
+
+                if (window._pestaniaActiva === 'compras') {
+                    window._comprasData = response.data;
+                    renderComprasCharts(window._comprasData, 'HNL');
                 }
             }
         });
     }
 
     $(document).on('change', '#modoCiudadSelect', function() {
-        cargarEstadistica("/estadisticas/suscriptores");
+        cargarEstadistica(`/estadisticas/${window._pestaniaActiva}`);
     });
 
 
     // Botones del menú
-    $("#btnEncuestas").click(() => cargarEstadistica("/estadisticas/encuestas"));
-    $("#btnSuscriptores").click(() => cargarEstadistica("/estadisticas/suscriptores"));
-    $("#btnAvanzado").click(() => cargarEstadistica("/estadisticas/avanzado"));
+    $("#btnEncuestas").click(() => {
+        window._pestaniaActiva = 'encuestas';
+        cargarEstadistica(`/estadisticas/${window._pestaniaActiva}`);
+    });
+
+    $("#btnSuscriptores").click(() => {
+        window._pestaniaActiva = 'suscriptores';
+        cargarEstadistica(`/estadisticas/${window._pestaniaActiva}`);
+    });
+
+    $("#btnCompras").click(() => {
+        window._pestaniaActiva = 'compras';
+        cargarEstadistica(`/estadisticas/${window._pestaniaActiva}`);
+    });
+
+    $("#btnAvanzado").click(() => {
+        window._pestaniaActiva = 'avanzado';
+        cargarEstadistica(`/estadisticas/${window._pestaniaActiva}`);
+    });
+
 
     $("#aplicarFiltroFecha").on("click", function () {
 
@@ -137,8 +177,7 @@ $(function () {
         window._filtrosFechas[key].inicio = $("#fechaInicio").val();
         window._filtrosFechas[key].fin    = $("#fechaFin").val();
 
-        // Vuelve a consultar backend
-        cargarEstadistica("/estadisticas/suscriptores");
+        cargarEstadistica(`/estadisticas/${window._pestaniaActiva}`);
     });
 
 });
@@ -168,15 +207,125 @@ const filtrar = (arr, clave) => {
     });
 };
 
+function renderComprasCharts(data, moneda) {
+    if (!data || !data[moneda]) return;
 
-function renderSuscriptoresCharts(estadisticas) {
-    if (!estadisticas) return;
+    const modo = window._modoCompras;
+    const d = data[moneda][modo];
 
-    // Guardamos los datos "raw" para construir tabla después
-    window._suscriptoresData = estadisticas;
+    const simbolo = moneda === 'HNL' ? 'L' : '$';
+    const sufijo  = modo === 'valor'
+        ? `(${simbolo})`
+        : '(Cantidad)';
 
-    actualizarGraficos();
-    actualizarTabla();
+    const chartsMap = {
+        comprasDia: 'porDia',
+        comprasProducto: 'porProducto',
+        comprasEstado: 'porEstado',
+        comprasMarca: 'porMarca',
+        comprasCanal: 'porCanal'
+    };
+
+    const render = (canvasId, key, labels, values, type = 'bar', labelTexto = '') => {
+        const ctx = document.getElementById(canvasId);
+        if (!ctx) return;
+
+        // destruir SOLO el gráfico correcto
+        if (window._chartsCompras[key]) {
+            window._chartsCompras[key].destroy();
+        }
+
+        window._chartsCompras[key] = new Chart(ctx, {
+            type,
+            data: {
+                labels,
+                datasets: [{
+                    label: labelTexto,
+                    data: values
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+    };
+
+    render(
+        'comprasDia',
+        'porDia',
+        Object.keys(d.porDia),
+        Object.values(d.porDia),
+        'line',
+        `Suscripciones por día ${sufijo}`
+    );
+
+    render(
+        'comprasProducto',
+        'porProducto',
+        Object.keys(d.porProducto),
+        Object.values(d.porProducto),
+        'bar',
+        `Suscripciones por producto ${sufijo}`
+    );
+
+    render(
+        'comprasEstado',
+        'porEstado',
+        Object.keys(d.porEstado),
+        Object.values(d.porEstado),
+        'bar',
+        `Suscripciones por estado ${sufijo}`
+    );
+
+    render(
+        'comprasMarca',
+        'porMarca',
+        Object.keys(d.porMarca),
+        Object.values(d.porMarca),
+        'bar',
+        `Suscripciones por marca ${sufijo}`
+    );
+
+    render(
+        'comprasCanal',
+        'porCanal',
+        Object.keys(d.porCanal),
+        Object.values(d.porCanal),
+        'bar',
+        `Suscripciones por canal ${sufijo}`
+    );
+}
+
+$(document).on('click', '#tabsMoneda button', function () {
+    $('#tabsMoneda button').removeClass('active');
+    $(this).addClass('active');
+    const moneda = $(this).data('moneda');
+    renderComprasCharts(window._comprasData, moneda);
+});
+
+function renderComprasPorDia(labels, data, labelTexto) {
+    const ctx = document.getElementById('comprasDia');
+
+    if (window._chartsCompras.porDia) {
+        window._chartsCompras.porDia.destroy();
+    }
+
+    window._chartsCompras.porDia = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: labelTexto,
+                data: data,
+                fill: false
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false
+        }
+    });
 }
 
 function crearTabla(idContenedor, items) {
@@ -211,9 +360,11 @@ function crearTabla(idContenedor, items) {
 }
 
 function renderSuscriptoresCharts(estadisticas) {
+    if (!estadisticas) return;
     window._suscriptoresData = estadisticas;
     actualizarGraficosYTablas();
 }
+
 
 function actualizarGraficosYTablas() {
     const data = window._suscriptoresData;
@@ -231,17 +382,21 @@ function actualizarGraficosYTablas() {
     };
 
     // Reiniciar los canvas para evitar duplicados
-    $('canvas').each(function () {
+    /*$('canvas').each(function () {
         const newCanvas = $(this).clone();
         $(this).replaceWith(newCanvas);
-    });
+    });*/
 
     const makeChart = (id, type, items) => {
         const ctx = document.getElementById(id);
         if (!ctx) return;
 
-        new Chart(ctx, {
-            type: type,
+        if (window._chartsSuscriptores[id]) {
+            window._chartsSuscriptores[id].destroy();
+        }
+
+        window._chartsSuscriptores[id] = new Chart(ctx, {
+            type,
             data: {
                 labels: items.map(i => i.categoria),
                 datasets: [{
@@ -255,6 +410,10 @@ function actualizarGraficosYTablas() {
                         'rgba(201,203,207,0.6)'
                     ]
                 }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
             }
         });
     };
@@ -292,14 +451,24 @@ $(document).on("click", ".toggle-vacios", function () {
     actualizarGraficosYTablas();
 });
 
-$(document).on('shown.bs.tab', 'button[data-bs-toggle="tab"]', function (e) {
+$(document).on('click', '[data-modo]', function () {
+    $('[data-modo]').removeClass('active');
+    $(this).addClass('active');
+
+    window._modoCompras = $(this).data('modo');
+
+    const moneda = $('#tabsMoneda .active').data('moneda');
+    renderComprasCharts(window._comprasData, moneda);
+});
+
+/*$(document).on('shown.bs.tab', 'button[data-bs-toggle="tab"]', function (e) {
     window._pestaniaActiva = e.target.id.replace('tab-', '');
 
     const fechas = window._filtrosFechas[window._pestaniaActiva];
 
     $("#fechaInicio").val(fechas.inicio);
     $("#fechaFin").val(fechas.fin);
-});
+});*/
 
 </script>
 @endsection
