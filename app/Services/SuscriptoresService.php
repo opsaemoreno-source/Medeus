@@ -53,7 +53,7 @@ class SuscriptoresService
                     $fechaFin
                 ),
                 'pais'            => $this->queryCountSimple('pais', $fechaInicio, $fechaFin),
-                'ciudad'          => $this->queryCountSimple('ciudad', $fechaInicio, $fechaFin),
+                'ciudad'          => $this->queryCountCiudadNormalizada($fechaInicio, $fechaFin),
                 'canal'           => $this->queryCountSimple('canal', $fechaInicio, $fechaFin),
             ];
         } catch (Exception $e) {
@@ -166,38 +166,56 @@ class SuscriptoresService
         ?string $fechaFin = null
     ): array
     {
+        // Selección de tabla y campo según el modo
         $tabla = $modo === 'original'
-            ? '`UsuariosOPSA.UsuariosEvolok`'
-            : '`UsuariosOPSA.normalizado_UsuariosEvolok`';
+            ? "`{$this->datasetId}.{$this->tableId}`"
+            : "`{$this->datasetId}.vta_ciudadesNormalizadas`";
 
-        $campoCiudad = $modo === 'original'
-            ? 'ciudad'
-            : 'ciudad_hibrida';
-
+        // Condición WHERE
         $where = [];
-
         if ($fechaInicio && $fechaFin) {
-            $where[] = "fechaCreacion BETWEEN TIMESTAMP('$fechaInicio') AND TIMESTAMP('$fechaFin')";
+            $where[] = $modo === 'original'
+                ? "fechaCreacion BETWEEN TIMESTAMP('$fechaInicio 00:00:00') AND TIMESTAMP('$fechaFin 23:59:59')"
+                : "fechaCreacion BETWEEN '$fechaInicio 00:00:00' AND '$fechaFin 23:59:59'";
         }
 
         $whereSql = $where ? 'WHERE ' . implode(' AND ', $where) : '';
 
-        $sql = "
-            SELECT
-                $campoCiudad AS categoria,
-                COUNT(*) AS total
-            FROM $tabla
-            $whereSql
-            GROUP BY categoria
-            ORDER BY total DESC
-        ";
+        // Consulta según modo
+        if ($modo === 'original') {
+            $query = "
+                SELECT
+                    COALESCE(NULLIF(TRIM(ciudad), ''), 'Sin datos') AS categoria,
+                    COUNT(*) AS total
+                FROM $tabla
+                $whereSql
+                GROUP BY categoria
+                ORDER BY total DESC
+            ";
+        } else {
+            // Normalizado: usar alias_norm y ciudad_canonica
+            $query = "
+                SELECT
+                    COALESCE(c.ciudad_canonica, COALESCE(NULLIF(TRIM(u.ciudad), ''), 'Sin datos')) AS categoria,
+                    COUNT(1) AS total
+                FROM `{$this->datasetId}.{$this->tableId}` u
+                LEFT JOIN $tabla c
+                    ON REGEXP_REPLACE(
+                        REGEXP_REPLACE(NORMALIZE(UPPER(u.ciudad), NFD), r'\\p{M}', ''),
+                        r'[^A-Z0-9]', ''
+                    ) = c.alias_norm
+                $whereSql
+                GROUP BY categoria
+                ORDER BY total DESC
+            ";
+        }
 
-        $queryConfig  = $this->bigQuery->query($sql);
-        $queryResults = $this->bigQuery->runQuery($queryConfig);    
+        // Ejecutar query
+        $queryJobConfig  = $this->bigQuery->query($query);
+        $queryResults    = $this->bigQuery->runQuery($queryJobConfig);
 
         $resultado = [];
-
-        foreach ($queryResults as $row) {
+        foreach ($queryResults->rows() as $row) {  // ⚠ Usar ->rows()
             $resultado[] = [
                 'categoria' => $row['categoria'],
                 'total'     => (int) $row['total'],
@@ -206,5 +224,41 @@ class SuscriptoresService
 
         return $resultado;
     }
+
+    protected function queryCountCiudadNormalizada(
+        ?string $fechaInicio = null,
+        ?string $fechaFin = null
+    ): array {
+
+        $where = '';
+        if ($fechaInicio && $fechaFin) {
+            $where = "WHERE u.fechaCreacion BETWEEN '$fechaInicio 00:00:00' AND '$fechaFin 23:59:59'";
+        }
+
+        $query = "
+            SELECT
+                COALESCE(
+                    c.ciudad_canonica,
+                    COALESCE(NULLIF(TRIM(u.ciudad), ''), 'Sin datos')
+                ) AS categoria,
+                COUNT(1) AS total
+            FROM `{$this->datasetId}.{$this->tableId}` u
+            LEFT JOIN `{$this->datasetId}.vta_ciudadesNormalizadas` c
+                ON REGEXP_REPLACE(
+                    REGEXP_REPLACE(
+                        NORMALIZE(UPPER(u.ciudad), NFD),
+                        r'\p{M}',
+                        ''
+                    ),
+                    r'[^A-Z0-9]',
+                    ''
+                ) = c.alias_norm
+            GROUP BY categoria
+            ORDER BY total DESC;
+        ";
+
+        return $this->runQuery($query);
+    }
+
 
 }
