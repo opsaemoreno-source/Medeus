@@ -82,7 +82,8 @@ window._chartsCompras = {
     porProducto: null,
     porEstado: null,
     porMarca: null,
-    porCanal: null
+    porCanal: null,
+    porFrecuencia: null
 };
 
 window._chartsSuscriptores = {};
@@ -133,7 +134,8 @@ $(function () {
 
                 if (window._pestaniaActiva === 'compras') {
                     window._comprasData = response.data;
-                    renderComprasCharts(window._comprasData, 'HNL');
+                    window._comprasActivasData = response.activas;
+                    renderComprasCharts(window._comprasData, 'HNL', window._comprasActivasData);
                 }
             }
         });
@@ -207,11 +209,12 @@ const filtrar = (arr, clave) => {
     });
 };
 
-function renderComprasCharts(data, moneda) {
+function renderComprasCharts(data, moneda, activas) {
     if (!data || !data[moneda]) return;
 
     const modo = window._modoCompras;
     const d = data[moneda][modo];
+    const da = activas?.[moneda]?.[modo];
 
     const simbolo = moneda === 'HNL' ? 'L' : '$';
     const sufijo  = modo === 'valor'
@@ -223,7 +226,8 @@ function renderComprasCharts(data, moneda) {
         comprasProducto: 'porProducto',
         comprasEstado: 'porEstado',
         comprasMarca: 'porMarca',
-        comprasCanal: 'porCanal'
+        comprasCanal: 'porCanal',
+        comprasFrecuencia: 'porFrecuencia'
     };
 
     const render = (canvasId, key, labels, values, type = 'bar', labelTexto = '') => {
@@ -254,8 +258,8 @@ function renderComprasCharts(data, moneda) {
     render(
         'comprasDia',
         'porDia',
-        Object.keys(d.porDia),
-        Object.values(d.porDia),
+        Object.keys(da.porDia),
+        Object.values(da.porDia),
         'line',
         `Suscripciones por día ${sufijo}`
     );
@@ -263,8 +267,8 @@ function renderComprasCharts(data, moneda) {
     render(
         'comprasProducto',
         'porProducto',
-        Object.keys(d.porProducto),
-        Object.values(d.porProducto),
+        Object.keys(da.porProducto),
+        Object.values(da.porProducto),
         'bar',
         `Suscripciones por producto ${sufijo}`
     );
@@ -281,8 +285,8 @@ function renderComprasCharts(data, moneda) {
     render(
         'comprasMarca',
         'porMarca',
-        Object.keys(d.porMarca),
-        Object.values(d.porMarca),
+        Object.keys(da.porMarca),
+        Object.values(da.porMarca),
         'bar',
         `Suscripciones por marca ${sufijo}`
     );
@@ -290,10 +294,19 @@ function renderComprasCharts(data, moneda) {
     render(
         'comprasCanal',
         'porCanal',
-        Object.keys(d.porCanal),
-        Object.values(d.porCanal),
+        Object.keys(da.porCanal),
+        Object.values(da.porCanal),
         'bar',
         `Suscripciones por canal ${sufijo}`
+    );
+
+    render(
+        'comprasFrecuencia',
+        'porFrecuencia',
+        Object.keys(da.porFrecuencia),
+        Object.values(da.porFrecuencia),
+        'bar',
+        `Suscripciones por frecuencia ${sufijo}`
     );
 }
 
@@ -301,7 +314,7 @@ $(document).on('click', '#tabsMoneda button', function () {
     $('#tabsMoneda button').removeClass('active');
     $(this).addClass('active');
     const moneda = $(this).data('moneda');
-    renderComprasCharts(window._comprasData, moneda);
+    renderComprasCharts(window._comprasData, moneda, window._comprasActivasData);
 });
 
 function renderComprasPorDia(labels, data, labelTexto) {
@@ -458,7 +471,7 @@ $(document).on('click', '[data-modo]', function () {
     window._modoCompras = $(this).data('modo');
 
     const moneda = $('#tabsMoneda .active').data('moneda');
-    renderComprasCharts(window._comprasData, moneda);
+    renderComprasCharts(window._comprasData, moneda, window._comprasActivasData);
 });
 
 /*$(document).on('shown.bs.tab', 'button[data-bs-toggle="tab"]', function (e) {

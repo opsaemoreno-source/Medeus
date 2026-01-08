@@ -161,6 +161,35 @@ class ComprasService
 
     public function obtenerEstadisticasCompras(array $filtros): array
     {
+        $where = $this->buildWhere($filtros);
+
+        $sql = "
+            SELECT
+                idMoneda,
+                DATE(fechaInicioSuscripcion) AS dia,
+                nombreProductoDisplay AS producto,
+                estado,
+                marca,
+                canal,
+                idFrecuencia,
+
+                COUNT(*) AS cantidad,
+                SUM(IFNULL(precioFinal, 0)) AS valor
+
+            FROM `admanagerapiaccess-382213.UsuariosOPSA.Compras`
+            $where
+            GROUP BY idMoneda, dia, producto, estado, marca, canal, idFrecuencia
+            ORDER BY dia ASC
+        ";
+
+        $query = $this->bigQuery->query($sql);
+        $rows  = iterator_to_array($this->bigQuery->runQuery($query));
+
+        return $this->mapEstadisticasCompras($rows);
+    }
+
+    public function obtenerEstadisticasComprasActivas(array $filtros): array
+    {
         // FORZAR solo ACTIVE
         $filtros['estado'] = 'ACTIVE';
         $where = $this->buildWhere($filtros);
@@ -173,13 +202,14 @@ class ComprasService
                 estado,
                 marca,
                 canal,
+                idFrecuencia,
 
                 COUNT(*) AS cantidad,
                 SUM(IFNULL(precioFinal, 0)) AS valor
 
             FROM `admanagerapiaccess-382213.UsuariosOPSA.Compras`
             $where
-            GROUP BY idMoneda, dia, producto, estado, marca, canal
+            GROUP BY idMoneda, dia, producto, estado, marca, canal, idFrecuencia
             ORDER BY dia ASC
         ";
 
@@ -204,6 +234,7 @@ class ComprasService
                         'porEstado'   => [],
                         'porMarca'    => [],
                         'porCanal'    => [],
+                        'porFrecuencia' => [],
                     ],
                     'valor' => [
                         'porDia'      => [],
@@ -211,6 +242,7 @@ class ComprasService
                         'porEstado'   => [],
                         'porMarca'    => [],
                         'porCanal'    => [],
+                        'porFrecuencia' => [],
                     ],
                 ];
             }
@@ -223,6 +255,8 @@ class ComprasService
             $this->sumar($resultado[$moneda]['cantidad']['porEstado'],   $row['estado'],   $row['cantidad']);
             $this->sumar($resultado[$moneda]['cantidad']['porMarca'],    $row['marca'],    $row['cantidad']);
             $this->sumar($resultado[$moneda]['cantidad']['porCanal'],    $row['canal'],    $row['cantidad']);
+            $this->sumar($resultado[$moneda]['cantidad']['porFrecuencia'], $row['idFrecuencia'], $row['cantidad']);
+
 
             // =========================
             // VALOR
@@ -234,6 +268,7 @@ class ComprasService
             $this->sumar($resultado[$moneda]['valor']['porEstado'],   $row['estado'],   $valor);
             $this->sumar($resultado[$moneda]['valor']['porMarca'],    $row['marca'],    $valor);
             $this->sumar($resultado[$moneda]['valor']['porCanal'],    $row['canal'],    $valor);
+            $this->sumar($resultado[$moneda]['valor']['porFrecuencia'],$row['idFrecuencia'],$valor);
         }
 
         return $resultado;

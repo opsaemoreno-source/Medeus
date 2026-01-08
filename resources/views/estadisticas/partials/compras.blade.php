@@ -24,6 +24,7 @@
         <div class="col-md-6"><canvas id="comprasEstado"></canvas></div>
         <div class="col-md-6"><canvas id="comprasMarca"></canvas></div>
         <div class="col-md-6"><canvas id="comprasCanal"></canvas></div>
+        <div class="col-md-6"><canvas id="comprasFrecuencia"></canvas></div>
     </div>
 </div>
 

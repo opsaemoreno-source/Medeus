@@ -38,10 +38,12 @@ class EstadisticasController extends Controller
 
         $service = new ComprasService();
         $estadisticas = $service->obtenerEstadisticasCompras($filtros);
+        $estadisticasActivas = $service->obtenerEstadisticasComprasActivas($filtros);
 
         return response()->json([
             'html' => view('estadisticas.partials.compras')->render(),
-            'data' => $estadisticas
+            'data' => $estadisticas,
+            'activas' => $estadisticasActivas
         ]);
     }
 
