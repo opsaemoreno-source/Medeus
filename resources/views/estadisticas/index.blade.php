@@ -593,6 +593,9 @@ function cargarEstadisticasAvanzadas() {
             if (res.data.topProfesiones) {
                 renderTopProfesiones(res.data.topProfesiones);
             }
+            if (res.data.topNivelesEducativos) {
+                renderTopNivelesEducativos(res.data.topNivelesEducativos);
+            }
 
             const comprasRespuesta = res.data.comprasPorRespuesta || [];
 
@@ -664,6 +667,21 @@ function renderTopProfesiones(data) {
     });
 
     $('#tablaTopProfesiones').html(html);
+}
+
+function renderTopNivelesEducativos(data) {
+    let html = '';
+
+    data.forEach(row => {
+        html += `
+            <tr>
+                <td>${row.nivelEducativo}</td>
+                <td class="text-end">${row.total}</td>
+            </tr>
+        `;
+    });
+
+    $('#tablaTopNivelesEducativos').html(html);
 }
 
 </script>

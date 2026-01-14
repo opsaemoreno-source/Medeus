@@ -357,5 +357,24 @@ class EstadisticasAvanzadasService
         return $this->runQueryMultipleRows($sql);
     }
 
+    public function topNivelesEducativos(array $filtros): array
+    {
+        $where = $this->buildAndWhere($filtros);
+
+        $sql = "
+            SELECT
+                u.nivelEducativo AS nivelEducativo,
+                COUNT(*) AS total
+            FROM {$this->tablaUsuarios} u
+            WHERE u.nivelEducativo IS NOT NULL
+                AND u.nivelEducativo != ''
+                {$where}
+            GROUP BY u.nivelEducativo
+            ORDER BY total DESC
+            LIMIT 10
+        ";
+
+        return $this->runQueryMultipleRows($sql);
+    }
 
 }

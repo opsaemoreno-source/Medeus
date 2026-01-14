@@ -90,6 +90,7 @@ class EstadisticasController extends Controller
         $canales = $service->valoresDistintos('canal', $filtros);
         $topCiudades = $service->topCiudades($filtros);
         $topProfesiones = $service->topProfesiones($filtros);
+        $topNivelesEducativos = $service->topNivelesEducativos($filtros);
 
         $data = [
             'usuariosMixtos' => $service->usuariosConCompraYEncuesta($filtros),
@@ -100,6 +101,7 @@ class EstadisticasController extends Controller
             'topPaisesIP'     => $service->topPaisesIP($filtros),
             'topCiudades'     => $topCiudades,
             'topProfesiones' => $topProfesiones,
+            'topNivelesEducativos' => $topNivelesEducativos,
 
             'marcas' => $marcas,
             'canales' => $canales,

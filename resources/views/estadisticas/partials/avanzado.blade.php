@@ -212,6 +212,28 @@
         </div>
     </div>
 
+    <div class="card mt-4">
+        <div class="card-header">
+            <strong>Top 10 Nivel Educativo</strong>
+        </div>
+        <div class="card-body">
+            <table class="table table-sm">
+                <thead>
+                    <tr>
+                        <th>Nivel Educativo</th>
+                        <th class="text-end">Usuarios</th>
+                    </tr>
+                </thead>
+                <tbody id="tablaTopNivelesEducativos">
+                    <tr>
+                        <td colspan="2" class="text-center text-muted">
+                            Sin datos
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
 
 </div>
 
