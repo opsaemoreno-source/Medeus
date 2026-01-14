@@ -11,23 +11,18 @@
             <h5 class="text-uppercase fw-bold mb-3 mt-2">Estadísticas</h5>
 
             <div class="list-group">
-
-                <button class="list-group-item list-group-item-action py-3" id="btnEncuestas">
+                <button class="list-group-item list-group-item-action py-3 tab-btn" data-tab="encuestas">
                     Encuestas
                 </button>
-
-                <button class="list-group-item list-group-item-action py-3" id="btnSuscriptores">
+                <button class="list-group-item list-group-item-action py-3 tab-btn" data-tab="suscriptores">
                     Usuarios
                 </button>
-
-                <button class="list-group-item list-group-item-action py-3" id="btnCompras">
+                <button class="list-group-item list-group-item-action py-3 tab-btn" data-tab="compras">
                     Compras
                 </button>
-
-                <button class="list-group-item list-group-item-action py-3" id="btnAvanzado">
+                <button class="list-group-item list-group-item-action py-3 tab-btn" data-tab="avanzado">
                     Avanzado
                 </button>
-
             </div>
         </div>
 
@@ -35,12 +30,16 @@
         <div class="col-md-9 col-lg-10 py-4" id="contenidoEstadisticas">
 
             <h3 class="mb-4">Seleccione una opción del menú</h3>
-            <div class="d-flex gap-2 mb-3">
-                <input type="date" id="fechaInicio" class="form-control form-control-sm" style="max-width: 180px;">
-                <input type="date" id="fechaFin" class="form-control form-control-sm" style="max-width: 180px;">
-                <button id="aplicarFiltroFecha" class="btn btn-sm btn-primary">
-                    Aplicar
-                </button>
+            <div class="row mb-3" id="filtroFechasGeneral">
+                <div class="col-md-3">
+                    <input type="date" id="fechaInicio" class="form-control">
+                </div>
+                <div class="col-md-3">
+                    <input type="date" id="fechaFin" class="form-control">
+                </div>
+                <div class="col-md-2">
+                    <button id="aplicarFiltros" class="btn btn-primary">Aplicar</button>
+                </div>
             </div>
 
             {{-- Loader --}}
@@ -85,6 +84,23 @@ window._chartsCompras = {
     porCanal: null,
     porFrecuencia: null
 };
+
+window._filtrosAvanzado = {
+    fecha_inicio: null,
+    fecha_fin: null,
+    marca: null,
+    genero: null,
+    estadoCivil: null,
+    nivelEducativo: null,
+    profesion: null,
+    pais: null,
+    ciudad: null,
+    canal: null,
+    edad_min: null,
+    edad_max: null
+};
+
+window._chartsAvanzado = {};
 
 window._chartsSuscriptores = {};
 
@@ -137,6 +153,15 @@ $(function () {
                     window._comprasActivasData = response.activas;
                     renderComprasCharts(window._comprasData, 'HNL', window._comprasActivasData);
                 }
+
+                if (window._pestaniaActiva === 'avanzado') {
+                    setTimeout(() => {
+                        $('#avanzadoFechaInicio').val($('#fechaInicio').val());
+                        $('#avanzadoFechaFin').val($('#fechaFin').val());
+                        cargarEstadisticasAvanzadas();
+                    }, 0);
+                }
+
             }
         });
     }
@@ -180,6 +205,32 @@ $(function () {
         window._filtrosFechas[key].fin    = $("#fechaFin").val();
 
         cargarEstadistica(`/estadisticas/${window._pestaniaActiva}`);
+    });
+
+    function onTabChange(tab) {
+        window._pestaniaActiva = tab;
+
+        if (tab === 'avanzado') {
+            $('#filtroFechasGeneral').hide();
+        } else {
+            $('#filtroFechasGeneral').show();
+        }
+
+        cargarEstadistica(`/estadisticas/${window._pestaniaActiva}`);
+    }
+
+    $(document).ready(function () {
+        const initialTab = window._pestaniaActiva || 'encuestas';
+        onTabChange(initialTab);
+    });
+
+
+    $(document).on('click', '.tab-btn', function () {
+        $('.tab-btn').removeClass('active');
+        $(this).addClass('active');
+
+        const tab = $(this).data('tab');
+        onTabChange(tab);
     });
 
 });
@@ -474,14 +525,146 @@ $(document).on('click', '[data-modo]', function () {
     renderComprasCharts(window._comprasData, moneda, window._comprasActivasData);
 });
 
-/*$(document).on('shown.bs.tab', 'button[data-bs-toggle="tab"]', function (e) {
-    window._pestaniaActiva = e.target.id.replace('tab-', '');
+function getFiltrosAvanzado() {
+    let edadMin = null;
+    let edadMax = null;
+    const rango = $('#avanzadoEdadRango').val();
+    if (rango) {
+        if (rango.includes('+')) {
+            edadMin = parseInt(rango.replace('+', ''));
+            edadMax = null;
+        } else {
+            const partes = rango.split('-');
+            edadMin = parseInt(partes[0]);
+            edadMax = parseInt(partes[1]);
+        }
+    }
 
-    const fechas = window._filtrosFechas[window._pestaniaActiva];
+    return {
+        fecha_inicio: $('#avanzadoFechaInicio').val(),
+        fecha_fin: $('#avanzadoFechaFin').val(),
+        marca: $('#avanzadoMarca').val(),
+        genero: $('#avanzadoGenero').val(),
+        edad_min: edadMin,
+        edad_max: edadMax,
+        estadoCivil: $('#avanzadoEstadoCivil').val(),
+        nivelEducativo: $('#avanzadoNivelEducativo').val(),
+        profesion: $('#avanzadoProfesion').val(),
+        pais: $('#avanzadoPais').val(),
+        ciudad: $('#avanzadoCiudad').val(),
+        canal: $('#avanzadoCanal').val()
+    };
+}
 
-    $("#fechaInicio").val(fechas.inicio);
-    $("#fechaFin").val(fechas.fin);
-});*/
+function cargarEstadisticasAvanzadas() {
+    const filtros = getFiltrosAvanzado();
+    let htmlPerfil = '';
+    let htmlIP = '';
+    
+    $.ajax({
+        url: '/estadisticas/avanzado',
+        method: 'GET',
+        data: filtros,
+        beforeSend: () => {
+            $('#avanzadoKPIs h3').text('Cargando...');
+        },
+        success: function(res) {
+            // KPIs
+            $('#kpiUsuarios').text(res.data.usuariosMixtos.total_usuarios || 0);
+            $('#kpiCompras').text(res.data.usuariosMixtos.total_compras || 0);
+            $('#kpiUsuariosEncuestas').text(res.data.usuariosRespondieronEncuesta ?? 0);
+
+            if (res.data.suscripciones) {
+                $('#kpiSuscripciones').text(
+                    res.data.suscripciones.total_suscripciones || 0
+                );
+
+                $('#kpiMontoUSD').text(
+                    '$ ' + (res.data.suscripciones.monto_usd || 0).toLocaleString()
+                );
+
+                $('#kpiMontoHNL').text(
+                    'L ' + (res.data.suscripciones.monto_hnl || 0).toLocaleString()
+                );
+            }
+            if (res.data.topCiudades) {
+                renderTopCiudades(res.data.topCiudades);
+            }
+            if (res.data.topProfesiones) {
+                renderTopProfesiones(res.data.topProfesiones);
+            }
+
+            const comprasRespuesta = res.data.comprasPorRespuesta || [];
+
+            // Limitar visualización si hay muchas respuestas
+            const topRespuestas = comprasRespuesta.slice(0, 20);
+            
+            // Llenar dropdown Marca
+            const selectMarca = $('#avanzadoMarca');
+            selectMarca.empty();
+            selectMarca.append(`<option value="">Todos</option>`);
+            (res.data.marcas || []).forEach(m => selectMarca.append(`<option value="${m}">${m}</option>`));
+
+            // Llenar dropdown Canal
+            const selectCanal = $('#avanzadoCanal');
+            selectCanal.empty();
+            selectCanal.append(`<option value="">Todos</option>`);
+            (res.data.canales || []).forEach(c => selectCanal.append(`<option value="${c}">${c}</option>`));
+
+            (res.data.topPaisesPerfil || []).forEach(row => {
+                htmlPerfil += `
+                    <tr>
+                        <td>${row.pais}</td>
+                        <td class="text-end">${row.total}</td>
+                    </tr>`;
+            });
+            $('#tablaTopPaisPerfil').html(htmlPerfil);
+            // Top Países IP
+            
+            (res.data.topPaisesIP || []).forEach(row => {
+                htmlIP += `
+                    <tr>
+                        <td>${row.pais}</td>
+                        <td class="text-end">${row.total}</td>
+                    </tr>`;
+            });
+            $('#tablaTopPaisIP').html(htmlIP);
+        },
+        error: function(err) {
+            console.error('Error al cargar estadísticas avanzadas', err);
+        }
+    });
+}
+
+function renderTopCiudades(data) {
+    let html = '';
+
+    data.forEach(row => {
+        html += `
+            <tr>
+                <td>${row.ciudad}</td>
+                <td class="text-end">${row.total}</td>
+            </tr>
+        `;
+    });
+
+    $('#tablaTopCiudades').html(html);
+}
+
+function renderTopProfesiones(data) {
+    let html = '';
+
+    data.forEach(row => {
+        html += `
+            <tr>
+                <td>${row.profesion}</td>
+                <td class="text-end">${row.total}</td>
+            </tr>
+        `;
+    });
+
+    $('#tablaTopProfesiones').html(html);
+}
 
 </script>
 @endsection

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 use App\Services\SuscriptoresService;
 use App\Services\ComprasService;
+use App\Services\EstadisticasAvanzadasService;
 
 use Illuminate\Http\Request;
 
@@ -79,10 +80,35 @@ class EstadisticasController extends Controller
     /**
      * Cargar parcial de opciones avanzadas
      */
-    public function avanzado()
+    public function avanzado(Request $request)
     {
+        $filtros = $request->all();
+
+        $service = new EstadisticasAvanzadasService();
+
+        $marcas = $service->valoresDistintos('marca', $filtros);
+        $canales = $service->valoresDistintos('canal', $filtros);
+        $topCiudades = $service->topCiudades($filtros);
+        $topProfesiones = $service->topProfesiones($filtros);
+
+        $data = [
+            'usuariosMixtos' => $service->usuariosConCompraYEncuesta($filtros),
+
+            'usuariosRespondieronEncuesta' => $service->usuariosQueRespondieronEncuestas($filtros),
+            'suscripciones' => $service->suscripcionesCompradas($filtros),
+            'topPaisesPerfil' => $service->topPaisesPerfil($filtros),
+            'topPaisesIP'     => $service->topPaisesIP($filtros),
+            'topCiudades'     => $topCiudades,
+            'topProfesiones' => $topProfesiones,
+
+            'marcas' => $marcas,
+            'canales' => $canales,
+        ];
+
         return response()->json([
-            'html' => view('estadisticas.partials.avanzado')->render()
+            'html' => view('estadisticas.partials.avanzado', compact('data'))->render(),
+            'data' => $data
         ]);
     }
+
 }
