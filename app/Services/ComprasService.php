@@ -9,7 +9,7 @@ class ComprasService
 {
     protected $bigQuery;
     protected string $datasetId = 'UsuariosOPSA';
-    protected string $tableId   = 'UsuariosEvolok';
+    protected string $tableId   = 'vta_usuariosEvolok';
 
     public function __construct()
     {

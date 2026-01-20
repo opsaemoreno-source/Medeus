@@ -14,6 +14,9 @@ class EstadisticasAvanzadasService
     protected string $catalogoCiudades;
     protected string $vtaUsuariosNormalizados;
     protected string $vtaCiudadesNormalizadas;
+    protected string $tablaProfesiones;
+    protected string $tablaNivEducativo;
+    protected string $tablaPaises;
 
     public function __construct()
     {
@@ -22,12 +25,14 @@ class EstadisticasAvanzadasService
             'keyFilePath' => storage_path('app/google/bigquery.json')
         ]);
 
-        $this->tablaUsuarios = "`admanagerapiaccess-382213.UsuariosOPSA.UsuariosEvolok`";
+        $this->tablaUsuarios = "`admanagerapiaccess-382213.UsuariosOPSA.vta_usuariosEvolok`";
         $this->tablaCompras = "`admanagerapiaccess-382213.UsuariosOPSA.Compras`";
         $this->tablaEncuestas = "`admanagerapiaccess-382213.UsuariosOPSA.EncuestasTypeform`";
+        $this->tablaProfesiones = "`admanagerapiaccess-382213.UsuariosOPSA.data_profesion`";
+        $this->tablaNivEducativo = "`admanagerapiaccess-382213.UsuariosOPSA.data_nivelEducativo`";
+        $this->tablaPaises = "`admanagerapiaccess-382213.UsuariosOPSA.data_paises`";
         $this->tablaEncuestasDetalle = "`admanagerapiaccess-382213.UsuariosOPSA.EncuestasTypeformDetalle`";
         $this->catalogoCiudades = "`admanagerapiaccess-382213.UsuariosOPSA.catalogo_ciudadesNormalizacion`";
-        $this->vtaUsuariosNormalizados = "`admanagerapiaccess-382213.UsuariosOPSA.normalizado_UsuariosEvolok`";
         $this->vtaCiudadesNormalizadas = "`admanagerapiaccess-382213.UsuariosOPSA.vta_ciudadesNormalizadas`";
         
     }
@@ -40,8 +45,8 @@ class EstadisticasAvanzadasService
         $where = [];
 
         if (!empty($filtros['fecha_inicio']) && !empty($filtros['fecha_fin'])) {
-            $where[] = "u.fechaCreacion >= TIMESTAMP('{$filtros['fecha_inicio']}')
-                    AND u.fechaCreacion < TIMESTAMP('{$filtros['fecha_fin']}') + INTERVAL 1 DAY";
+            $where[] = "u.fechaCreacion >= DATETIME('{$filtros['fecha_inicio']}')
+                    AND u.fechaCreacion < DATETIME('{$filtros['fecha_fin']}') + INTERVAL 1 DAY";
         }
 
         foreach (['marca','genero','estadoCivil','nivelEducativo','profesion','pais','ciudad','canal'] as $campo) {
@@ -272,13 +277,15 @@ class EstadisticasAvanzadasService
 
         $sql = "
             SELECT
-                u.paisPerfil AS pais,
+                COALESCE(dp.label, u.paisPerfil) AS pais,
                 COUNT(*) AS total
             FROM {$this->tablaUsuarios} u
+            LEFT JOIN {$this->tablaPaises} dp
+                ON dp.idPais = u.paisPerfil
             WHERE u.paisPerfil IS NOT NULL
                 AND u.paisPerfil != ''
                 {$where}
-            GROUP BY u.paisPerfil
+            GROUP BY pais
             ORDER BY total DESC
             LIMIT 10
         ";
@@ -292,13 +299,15 @@ class EstadisticasAvanzadasService
 
         $sql = "
             SELECT
-                u.pais AS pais,
+                COALESCE(dp.label, u.pais) AS pais,
                 COUNT(*) AS total
             FROM {$this->tablaUsuarios} u
+            LEFT JOIN {$this->tablaPaises} dp
+                ON dp.idPaisAlter = u.pais
             WHERE u.pais IS NOT NULL
                 AND u.pais != ''
                 {$where}
-            GROUP BY u.pais
+            GROUP BY pais
             ORDER BY total DESC
             LIMIT 10
         ";
@@ -329,6 +338,7 @@ class EstadisticasAvanzadasService
                     ''
                 ) = c.alias_norm
             WHERE c.ciudad_canonica IS NOT NULL
+            {$where}
             GROUP BY ciudad
             ORDER BY total DESC
             LIMIT 10
@@ -343,13 +353,15 @@ class EstadisticasAvanzadasService
 
         $sql = "
             SELECT
-                u.profesion AS profesion,
+                COALESCE(dp.label, u.profesion) AS profesion,
                 COUNT(*) AS total
             FROM {$this->tablaUsuarios} u
+            LEFT JOIN {$this->tablaProfesiones} dp
+                ON dp.idProfesion = u.profesion
             WHERE u.profesion IS NOT NULL
                 AND u.profesion != ''
                 {$where}
-            GROUP BY u.profesion
+            GROUP BY profesion
             ORDER BY total DESC
             LIMIT 10
         ";
@@ -363,13 +375,15 @@ class EstadisticasAvanzadasService
 
         $sql = "
             SELECT
-                u.nivelEducativo AS nivelEducativo,
+                COALESCE(dne.label, u.nivelEducativo) AS nivelEducativo,
                 COUNT(*) AS total
             FROM {$this->tablaUsuarios} u
+            LEFT JOIN {$this->tablaNivEducativo} dne
+                ON dne.idNivEducativo = u.nivelEducativo
             WHERE u.nivelEducativo IS NOT NULL
                 AND u.nivelEducativo != ''
                 {$where}
-            GROUP BY u.nivelEducativo
+            GROUP BY nivelEducativo
             ORDER BY total DESC
             LIMIT 10
         ";

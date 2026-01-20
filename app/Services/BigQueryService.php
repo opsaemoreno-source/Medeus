@@ -16,7 +16,7 @@ class BigQueryService
             'projectId' => env('GOOGLE_PROJECT_ID'),
             'keyFilePath' => storage_path('app/google/bigquery.json')
         ]);
-        $this->tablaUsuarios = "`admanagerapiaccess-382213.UsuariosOPSA.UsuariosEvolok`";
+        $this->tablaUsuarios = "`admanagerapiaccess-382213.UsuariosOPSA.vta_usuariosEvolok`";
         $this->tablaEncuestas = "`admanagerapiaccess-382213.UsuariosOPSA.EncuestasTypeform`";
     }
 

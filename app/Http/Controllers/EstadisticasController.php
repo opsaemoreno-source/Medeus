@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use App\Services\SuscriptoresService;
 use App\Services\ComprasService;
 use App\Services\EstadisticasAvanzadasService;
+use App\Services\EncuestasService;
 
 use Illuminate\Http\Request;
 
@@ -20,10 +21,24 @@ class EstadisticasController extends Controller
     /**
      * Cargar parcial de encuestas
      */
-    public function encuestas()
+    public function encuestas(Request $request)
     {
+        $fechaInicio = $request->query('fecha_inicio');
+        $fechaFin    = $request->query('fecha_fin');
+
+        $service = new EncuestasService();
+
+        $data = [
+            'kpis' => $service->kpis($fechaInicio, $fechaFin),
+            'genero' => $service->demografia('genero'),
+            'pais' => $service->demografia('pais'),
+            'ciudad' => $service->demografia('ciudad'),
+            'nivelEducativo' => $service->demografia('nivelEducativo'),
+        ];
+
         return response()->json([
-            'html' => view('estadisticas.partials.encuestas')->render()
+            'html' => view('estadisticas.partials.encuestas', compact('data'))->render(),
+            'data' => $data
         ]);
     }
 

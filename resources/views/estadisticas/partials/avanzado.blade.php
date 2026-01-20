@@ -23,8 +23,8 @@
                     <label>Género</label>
                     <select id="avanzadoGenero" class="form-control form-control-sm">
                         <option value="">Todos</option>
-                        <option value="Masculino">Masculino</option>
-                        <option value="Femenino">Femenino</option>
+                        <option value="masculino">Masculino</option>
+                        <option value="femenino">Femenino</option>
                     </select>
                 </div>
                 <div class="col-md-2">
