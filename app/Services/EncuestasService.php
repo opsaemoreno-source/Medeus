@@ -26,36 +26,49 @@ class EncuestasService
      */
     public function kpis(?string $fechaInicio = null, ?string $fechaFin = null): array
     {
-        // Filtro de fechas opcional
+        // Filtro opcional de fecha
         $whereFecha = '';
         if ($fechaInicio && $fechaFin) {
             $whereFecha = "AND d.fechaFin BETWEEN '$fechaInicio 00:00:00' AND '$fechaFin 23:59:59'";
         }
 
         $query = "
-            WITH respuestas_por_usuario AS (
+            -- 1. Calcular respuestas por token (cada intento individual)
+            WITH respuestas_por_token AS (
                 SELECT
                     d.userid,
                     d.idEncuesta,
-                    COUNT(DISTINCT d.idPregunta) AS respuestas_usuario
+                    d.token,
+                    COUNT(DISTINCT d.idPregunta) AS respuestas_token
                 FROM `{$this->dataset}.EncuestasTypeformDetalle` d
                 INNER JOIN `{$this->dataset}.{$this->tablaUsuarios}` u
                     ON u.userid = d.userid
                 WHERE d.userid IS NOT NULL AND d.userid != ''
                 $whereFecha
-                GROUP BY d.userid, d.idEncuesta
+                GROUP BY d.userid, d.idEncuesta, d.token
             ),
+            -- 2. Traer número de campos por encuesta
             encuestas AS (
                 SELECT id, noCampos
                 FROM `{$this->dataset}.EncuestasTypeform`
+            ),
+            -- 3. Calcular % completación por token
+            pct_por_token AS (
+                SELECT
+                    r.userid,
+                    r.idEncuesta,
+                    r.token,
+                    SAFE_DIVIDE(r.respuestas_token, e.noCampos) * 100 AS pct_completacion_token
+                FROM respuestas_por_token r
+                INNER JOIN encuestas e
+                    ON e.id = r.idEncuesta
             )
+            -- 4. Calcular métricas generales
             SELECT
                 COUNT(DISTINCT r.userid) AS usuarios_respondieron,
                 ANY_VALUE(total_usuarios.total) AS total_usuarios,
-                ROUND(AVG(SAFE_DIVIDE(r.respuestas_usuario, e.noCampos) * 100), 2) AS porcentaje_completacion
-            FROM respuestas_por_usuario r
-            INNER JOIN encuestas e
-                ON e.id = r.idEncuesta
+                ROUND(AVG(r.pct_completacion_token), 2) AS porcentaje_completacion
+            FROM pct_por_token r
             CROSS JOIN (
                 SELECT COUNT(*) AS total
                 FROM `{$this->dataset}.{$this->tablaUsuarios}`
