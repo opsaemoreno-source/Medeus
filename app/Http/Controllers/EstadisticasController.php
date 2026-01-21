@@ -109,14 +109,22 @@ class EstadisticasController extends Controller
 
         $data = [
             'usuariosMixtos' => $service->usuariosConCompraYEncuesta($filtros),
-
             'usuariosRespondieronEncuesta' => $service->usuariosQueRespondieronEncuestas($filtros),
             'suscripciones' => $service->suscripcionesCompradas($filtros),
+
             'topPaisesPerfil' => $service->topPaisesPerfil($filtros),
             'topPaisesIP'     => $service->topPaisesIP($filtros),
             'topCiudades'     => $topCiudades,
             'topProfesiones' => $topProfesiones,
             'topNivelesEducativos' => $topNivelesEducativos,
+
+            // NUEVO
+            'catalogos' => [
+                'estadoCivil'     => $service->catalogoEstadoCivil(),
+                'nivelEducativo' => $service->catalogoNivelEducativo(),
+                'profesion'      => $service->catalogoProfesiones(),
+                'pais'           => $service->catalogoPaises(),
+            ],
 
             'marcas' => $marcas,
             'canales' => $canales,

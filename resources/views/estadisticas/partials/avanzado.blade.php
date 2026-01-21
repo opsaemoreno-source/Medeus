@@ -44,19 +44,19 @@
             <div class="row g-2 mt-2">
                 <div class="col-md-2">
                     <label>Estado Civil</label>
-                    <input type="text" id="avanzadoEstadoCivil" class="form-control form-control-sm">
+                    <select id="avanzadoEstadoCivil" class="form-control form-control-sm"></select>
                 </div>
                 <div class="col-md-2">
                     <label>Nivel Educativo</label>
-                    <input type="text" id="avanzadoNivelEducativo" class="form-control form-control-sm">
+                    <select id="avanzadoNivelEducativo" class="form-control form-control-sm"></select>
                 </div>
                 <div class="col-md-2">
                     <label>Profesión</label>
-                    <input type="text" id="avanzadoProfesion" class="form-control form-control-sm">
+                    <select id="avanzadoProfesion" class="form-control form-control-sm"></select>
                 </div>
                 <div class="col-md-2">
                     <label>País</label>
-                    <input type="text" id="avanzadoPais" class="form-control form-control-sm">
+                    <select id="avanzadoPais" class="form-control form-control-sm"></select>
                 </div>
                 <div class="col-md-2">
                     <label>Ciudad</label>

@@ -391,4 +391,45 @@ class EstadisticasAvanzadasService
         return $this->runQueryMultipleRows($sql);
     }
 
+    public function catalogoEstadoCivil(): array
+    {
+        $sql = "
+            SELECT idCivil AS id, label
+            FROM `admanagerapiaccess-382213.UsuariosOPSA.data_estadoCivil`
+            ORDER BY label
+        ";
+        return $this->runQueryMultipleRows($sql);
+    }
+
+    public function catalogoNivelEducativo(): array
+    {
+        $sql = "
+            SELECT idNivEducativo AS id, label
+            FROM {$this->tablaNivEducativo}
+            ORDER BY label
+        ";
+        return $this->runQueryMultipleRows($sql);
+    }
+
+    public function catalogoProfesiones(): array
+    {
+        $sql = "
+            SELECT idProfesion AS id, label
+            FROM {$this->tablaProfesiones}
+            ORDER BY label
+        ";
+        return $this->runQueryMultipleRows($sql);
+    }
+
+    public function catalogoPaises(): array
+    {
+        $sql = "
+            SELECT DISTINCT idPaisAlter AS id, label
+            FROM {$this->tablaPaises}
+            WHERE idPaisAlter IS NOT NULL
+            ORDER BY label
+        ";
+        return $this->runQueryMultipleRows($sql);
+    }
+
 }

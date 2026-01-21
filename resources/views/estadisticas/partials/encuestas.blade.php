@@ -3,22 +3,28 @@
 
     {{-- KPIs --}}
     <div class="row text-center mb-4">
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="card p-3">
                 <h6>% Completación</h6>
                 <h3>{{ $data['kpis']['porcentaje_completacion'] }}%</h3>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="card p-3">
-                <h6>Usuarios que respondieron</h6>
-                <h3>{{ $data['kpis']['usuarios_respondieron'] }}</h3>
+                <h6>Usuarios registrados</h6>
+                <h3>{{ $data['kpis']['usuarios_registrados'] }}</h3>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-3">
             <div class="card p-3">
-                <h6>Total usuarios registrados</h6>
-                <h3>{{ $data['kpis']['total_usuarios'] }}</h3>
+                <h6>Usuarios no registrados</h6>
+                <h3>{{ $data['kpis']['usuarios_no_registrados'] }}</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card p-3">
+                <h6>Total usuarios que respondieron</h6>
+                <h3>{{ $data['kpis']['total_usuarios_encuesta'] }}</h3>
             </div>
         </div>
     </div>
@@ -65,7 +71,7 @@
             },
             options: {
                 responsive: true,
-                maintainAspectRatio: false
+                maintainAspectRatio: true
             }
         });
     };

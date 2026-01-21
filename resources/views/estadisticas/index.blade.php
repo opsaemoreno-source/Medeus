@@ -632,6 +632,35 @@ function cargarEstadisticasAvanzadas() {
                     </tr>`;
             });
             $('#tablaTopPaisIP').html(htmlIP);
+
+            // Estado Civil
+            const selEstado = $('#avanzadoEstadoCivil');
+            selEstado.empty().append('<option value="">Todos</option>');
+            (res.data.catalogos.estadoCivil || []).forEach(e =>
+                selEstado.append(`<option value="${e.id}">${e.label}</option>`)
+            );
+
+            // Nivel Educativo
+            const selNivel = $('#avanzadoNivelEducativo');
+            selNivel.empty().append('<option value="">Todos</option>');
+            (res.data.catalogos.nivelEducativo || []).forEach(e =>
+                selNivel.append(`<option value="${e.id}">${e.label}</option>`)
+            );
+
+            // Profesión
+            const selProf = $('#avanzadoProfesion');
+            selProf.empty().append('<option value="">Todos</option>');
+            (res.data.catalogos.profesion || []).forEach(e =>
+                selProf.append(`<option value="${e.id}">${e.label}</option>`)
+            );
+
+            // País
+            const selPais = $('#avanzadoPais');
+            selPais.empty().append('<option value="">Todos</option>');
+            (res.data.catalogos.pais || []).forEach(e =>
+                selPais.append(`<option value="${e.id}">${e.label}</option>`)
+            );
+
         },
         error: function(err) {
             console.error('Error al cargar estadísticas avanzadas', err);
