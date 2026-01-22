@@ -38,7 +38,7 @@
                     <input type="date" id="fechaFin" class="form-control">
                 </div>
                 <div class="col-md-2">
-                    <button id="aplicarFiltros" class="btn btn-primary">Aplicar</button>
+                    <button id="aplicarFiltroFecha" class="btn btn-primary">Aplicar</button>
                 </div>
             </div>
 
