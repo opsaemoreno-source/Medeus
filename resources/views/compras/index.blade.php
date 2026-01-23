@@ -21,16 +21,31 @@
                 </div>
 
                 {{-- Estado --}}
-                <div class="col-md-2">
+                <div class="col-md-3">
                     <label class="form-label">Estado</label>
-                    <select name="estado" class="form-select">
-                        <option value="">Todos</option>
-                        <option value="ACTIVE">ACTIVE</option>
-                        <option value="ACTIVE_PENDING">ACTIVE PENDING</option>
-                        <option value="CANCELLED">CANCELLED</option>
-                        <option value="CANCEL_PENDING">CANCEL PENDING</option>
-                        <option value="INCOMPLETE">INCOMPLETE</option>
-                    </select>
+
+                    <div class="dropdown w-100">
+                        <button class="btn btn-outline-secondary dropdown-toggle w-100"
+                                type="button"
+                                data-bs-toggle="dropdown">
+                            Seleccionar estados
+                        </button>
+
+                        <ul class="dropdown-menu w-100 px-2">
+                            @foreach (['ACTIVE','ACTIVE_PENDING','CANCELLED','CANCEL_PENDING','INCOMPLETE'] as $estado)
+                                <li>
+                                    <label class="form-check">
+                                        <input type="checkbox"
+                                            class="form-check-input estado-checkbox"
+                                            value="{{ $estado }}">
+                                        {{ $estado }}
+                                    </label>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
+
+                    <div id="estadoHiddenInputs"></div>
                 </div>
 
                 {{-- Marca --}}
@@ -142,6 +157,8 @@
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.datatables.net/2.3.5/js/dataTables.min.js"></script>
 <script type="text/javascript" language="javascript" src="https://nightly.datatables.net/responsive/js/dataTables.responsive.min.js"></script>
+<!--<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>-->
 <script>
 let dataTable = null;
 
@@ -156,11 +173,41 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('limpiarFiltros').addEventListener('click', () => {
         form.reset();
+        //$('#estadoSelect').val(null).trigger('change');
         cargarCompras();
+    });
+
+    /*$('#estadoSelect').select2({
+        placeholder: 'Seleccione estado(s)',
+        allowClear: true,
+        width: '100'
+    });*/
+
+    document.querySelectorAll('.estado-checkbox')
+        .forEach(cb => cb.addEventListener('change', syncEstados));
+
+    document.getElementById('limpiarFiltros').addEventListener('click', () => {
+        document.querySelectorAll('.estado-checkbox')
+            .forEach(cb => cb.checked = false);
+        document.getElementById('estadoHiddenInputs').innerHTML = '';
     });
 
     cargarCompras();
 });
+
+function syncEstados() {
+    const container = document.getElementById('estadoHiddenInputs');
+    container.innerHTML = '';
+
+    document.querySelectorAll('.estado-checkbox:checked')
+        .forEach(cb => {
+            const input = document.createElement('input');
+            input.type  = 'hidden';
+            input.name  = 'estado[]';
+            input.value = cb.value;
+            container.appendChild(input);
+        });
+}
 
 function cargarCompras() {
     const params = new URLSearchParams(new FormData(document.getElementById('filtrosCompras')));

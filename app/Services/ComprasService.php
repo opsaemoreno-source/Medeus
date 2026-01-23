@@ -116,10 +116,30 @@ class ComprasService
     {
         $conditions = [];
 
+        // =========================
+        // ESTADO (uno o varios)
+        // =========================
         if (!empty($filtros['estado'])) {
-            $conditions[] = "estado = '{$filtros['estado']}'";
+
+            if (is_array($filtros['estado'])) {
+                $estados = array_filter($filtros['estado']);
+
+                if (count($estados)) {
+                    $estadosSQL = implode(
+                        ', ',
+                        array_map(fn($e) => "'" . addslashes($e) . "'", $estados)
+                    );
+                    $conditions[] = "estado IN ($estadosSQL)";
+                }
+
+            } else {
+                $conditions[] = "estado = '" . addslashes($filtros['estado']) . "'";
+            }
         }
 
+        // =========================
+        // RESTO DE FILTROS (sin cambios)
+        // =========================
         if (!empty($filtros['marca'])) {
             $conditions[] = "marca = '{$filtros['marca']}'";
         }
@@ -132,26 +152,28 @@ class ComprasService
             $conditions[] = "tipoPago = '{$filtros['tipoPago']}'";
         }
 
-        if (!empty($filtros['search'])) {
-            $search = addslashes($filtros['search']);
-            $conditions[] = "(CAST(idUsuario AS STRING) LIKE '%$search%' 
-                            OR CAST(idCompra AS STRING) LIKE '%$search%')";
-        }
-        
-        if (!empty($filtros['fechaInicio'])) {
-            $conditions[] = "fechaInicioSuscripcion >= '{$filtros['fechaInicio']} 00:00:00'";
-        }
-
-        if (!empty($filtros['fechaFin'])) {
-            $conditions[] = "fechaInicioSuscripcion <= '{$filtros['fechaFin']} 23:59:59'";
-        }
-
         if (!empty($filtros['producto'])) {
             $conditions[] = "nombreProductoDisplay = '{$filtros['producto']}'";
         }
 
         if (!empty($filtros['plan'])) {
             $conditions[] = "nombrePlanPagoDisplay = '{$filtros['plan']}'";
+        }
+
+        if (!empty($filtros['search'])) {
+            $search = addslashes($filtros['search']);
+            $conditions[] = "(
+                CAST(idUsuario AS STRING) LIKE '%$search%' 
+                OR CAST(idCompra AS STRING) LIKE '%$search%'
+            )";
+        }
+
+        if (!empty($filtros['fechaInicio'])) {
+            $conditions[] = "fechaInicioSuscripcion >= '{$filtros['fechaInicio']} 00:00:00'";
+        }
+
+        if (!empty($filtros['fechaFin'])) {
+            $conditions[] = "fechaInicioSuscripcion <= '{$filtros['fechaFin']} 23:59:59'";
         }
 
         return count($conditions)
