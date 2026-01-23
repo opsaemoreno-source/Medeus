@@ -49,11 +49,40 @@ class EstadisticasAvanzadasService
                     AND u.fechaCreacion < DATETIME('{$filtros['fecha_fin']}') + INTERVAL 1 DAY";
         }
 
-        foreach (['marca','genero','estadoCivil','nivelEducativo','profesion','pais','ciudad','canal'] as $campo) {
+        foreach (['marca','genero','estadoCivil','nivelEducativo','profesion','pais','canal'] as $campo)
+        {
             if (!empty($filtros[$campo])) {
                 $valor = $this->esc($filtros[$campo]);
                 $where[] = "u.$campo = '$valor'";
             }
+        }
+
+        if (!empty($filtros['ciudad'])) {
+            $valor = strtoupper(trim($filtros['ciudad']));
+
+            $valorNorm = "
+                REGEXP_REPLACE(
+                    REGEXP_REPLACE(
+                        NORMALIZE('$valor', NFD),
+                        r'\\p{M}',
+                        ''
+                    ),
+                    r'[^A-Z0-9]',
+                    ''
+                )
+            ";
+
+            $where[] = "
+                REGEXP_REPLACE(
+                    REGEXP_REPLACE(
+                        NORMALIZE(UPPER(u.ciudad), NFD),
+                        r'\\p{M}',
+                        ''
+                    ),
+                    r'[^A-Z0-9]',
+                    ''
+                ) LIKE CONCAT('%', $valorNorm, '%')
+            ";
         }
 
         if (!empty($filtros['edad_min'])) {
