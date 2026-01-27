@@ -30,10 +30,10 @@ class EstadisticasController extends Controller
 
         $data = [
             'kpis' => $service->kpis($fechaInicio, $fechaFin),
-            'genero' => $service->demografia('genero'),
-            'pais' => $service->demografia('pais'),
-            'ciudad' => $service->demografia('ciudad'),
-            'nivelEducativo' => $service->demografia('nivelEducativo'),
+            'genero' => $service->demografia('genero',$fechaInicio, $fechaFin),
+            'pais' => $service->demografia('pais',$fechaInicio, $fechaFin),
+            'ciudad' => $service->demografia('ciudad',$fechaInicio, $fechaFin),
+            'nivelEducativo' => $service->demografia('nivelEducativo',$fechaInicio, $fechaFin),
         ];
 
         return response()->json([

@@ -1,3 +1,9 @@
+@php
+    use Carbon\Carbon;
+
+    $fechaInicio = Carbon::now()->startOfMonth()->format('Y-m-d');
+    $fechaFin = Carbon::now()->endOfMonth()->format('Y-m-d');
+@endphp
 @extends('layouts.app')
 
 @section('content')
@@ -32,10 +38,10 @@
             <h3 class="mb-4">Seleccione una opción del menú</h3>
             <div class="row mb-3" id="filtroFechasGeneral">
                 <div class="col-md-3">
-                    <input type="date" id="fechaInicio" class="form-control">
+                    <input type="date" id="fechaInicio" class="form-control"  value="{{ $fechaInicio }}">
                 </div>
                 <div class="col-md-3">
-                    <input type="date" id="fechaFin" class="form-control">
+                    <input type="date" id="fechaFin" class="form-control"  value="{{ $fechaFin }}">
                 </div>
                 <div class="col-md-2">
                     <button id="aplicarFiltroFecha" class="btn btn-primary">Aplicar</button>
@@ -76,6 +82,18 @@ window._filtrosFechas = {
     compras: { inicio: null, fin: null }
 };
 
+$(document).ready(function () {
+
+    const inicio = $('#fechaInicio').val();
+    const fin    = $('#fechaFin').val();
+
+    Object.keys(window._filtrosFechas).forEach(key => {
+        window._filtrosFechas[key].inicio = inicio;
+        window._filtrosFechas[key].fin    = fin;
+    });
+
+});
+
 window._chartsCompras = {
     porDia: null,
     porProducto: null,
@@ -115,7 +133,15 @@ $(function () {
 
         const params = new URLSearchParams();
         const key = window._pestaniaActiva;
+        if (!window._filtrosFechas[key]) {
+            window._filtrosFechas[key] = { inicio: null, fin: null };
+        }
         const fechas = window._filtrosFechas[key];
+
+        if ((!fechas?.inicio || !fechas?.fin) && $('#fechaInicio').val()) {
+            fechas.inicio = $('#fechaInicio').val();
+            fechas.fin    = $('#fechaFin').val();
+        }
 
         if (fechas?.inicio && fechas?.fin) {
             params.append('fecha_inicio', fechas.inicio);
@@ -191,7 +217,6 @@ $(function () {
         window._pestaniaActiva = 'avanzado';
         cargarEstadistica(`/estadisticas/${window._pestaniaActiva}`);
     });
-
 
     $("#aplicarFiltroFecha").on("click", function () {
 

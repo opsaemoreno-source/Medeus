@@ -1,3 +1,9 @@
+@php
+    use Carbon\Carbon;
+
+    $fechaInicio = Carbon::now()->startOfMonth()->format('Y-m-d');
+    $fechaFin = Carbon::now()->endOfMonth()->format('Y-m-d');
+@endphp
 <div class="container-fluid">
 
     <h3 class="mb-4">Estadísticas Avanzadas</h3>
@@ -9,11 +15,11 @@
 
                 <div class="col-md-2">
                     <label>Fecha Inicio</label>
-                    <input type="date" id="avanzadoFechaInicio" class="form-control form-control-sm">
+                    <input type="date" id="avanzadoFechaInicio" class="form-control form-control-sm" value="{{ $fechaInicio }}">
                 </div>
                 <div class="col-md-2">
                     <label>Fecha Fin</label>
-                    <input type="date" id="avanzadoFechaFin" class="form-control form-control-sm">
+                    <input type="date" id="avanzadoFechaFin" class="form-control form-control-sm" value="{{ $fechaFin }}">
                 </div>
                 <div class="col-md-2">
                     <label>Marca</label>

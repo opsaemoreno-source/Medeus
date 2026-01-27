@@ -3,12 +3,11 @@
 @section('content')
 <div class="container mt-5 mb-5">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="mb-0">Suscriptores</h2>
-        <!-- Puedes agregar botones aquí, por ejemplo, "Nuevo Suscriptor" si lo necesitas -->
+        <h2 class="mb-0">Usuarios</h2>
     </div>
 
     <div class="mb-3">
-        <h5>Total de Suscriptores: <strong>{{ $totalSuscriptores }}</strong></h5>
+        <h5>Total de Usuarios: <strong>{{ $totalSuscriptores }}</strong></h5>
     </div>
 
     <div class="card mb-4">

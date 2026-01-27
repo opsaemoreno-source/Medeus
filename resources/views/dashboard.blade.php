@@ -24,8 +24,8 @@
             <a href="{{ route('suscriptores.index') }}" class="text-decoration-none">
                 <div class="card text-white shadow-sm h-100" style="background-color: #6bafbd; border-radius: 12px;">
                     <div class="card-body d-flex flex-column justify-content-between p-4">
-                        <h3 class="fw-bold mb-2">Suscriptores</h3>
-                        <p class="mb-0">Ver listado de suscriptores registrados</p>
+                        <h3 class="fw-bold mb-2">Usuarios</h3>
+                        <p class="mb-0">Ver listado de usuarios registrados</p>
                     </div>
                 </div>
             </a>
@@ -62,7 +62,7 @@
                 <div class="card shadow-sm h-100" style="background-color: #F1F5FC; border-radius: 12px; color: #555;">
                     <div class="card-body d-flex flex-column justify-content-between p-4">
                         <h3 class="fw-bold mb-2">Usuarios</h3>
-                        <p class="mb-0">Ver listado de usuarios registrados</p>
+                        <p class="mb-0">Ver listado de usuarios del sistema.</p>
                     </div>
                 </div>
             </a>

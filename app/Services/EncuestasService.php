@@ -102,8 +102,12 @@ class EncuestasService
     /**
      * Demografía de usuarios que respondieron encuestas
      */
-    public function demografia(string $campo): array
+    public function demografia(string $campo, ?string $fechaInicio = null, ?string $fechaFin = null): array
     {
+        $whereFecha = '';
+        if ($fechaInicio && $fechaFin) {
+            $whereFecha = "AND d.fechaFin BETWEEN '$fechaInicio 00:00:00' AND '$fechaFin 23:59:59'";
+        }
         $setLimit = "";
         $joinExtra = '';
         if ($campo === 'genero') {
@@ -180,6 +184,7 @@ class EncuestasService
             $joinExtra
             WHERE d.userid IS NOT NULL
             AND d.userid != ''
+            {$whereFecha}
             GROUP BY categoria
             ORDER BY total DESC
             {$setLimit}
