@@ -8,8 +8,10 @@ use Exception;
 class ComprasService
 {
     protected $bigQuery;
-    protected string $datasetId = 'UsuariosOPSA';
-    protected string $tableId   = 'vta_usuariosEvolok';
+    protected string $datasetId = 'admanagerapiaccess-382213.UsuariosOPSA';
+    protected string $tableCompras   = 'vta_Compras';
+    protected string $viewComprasActual   = 'vta_Compras';
+    protected string $viewComprasHistorico = 'vta_ComprasHistorico';
 
     public function __construct()
     {
@@ -40,7 +42,7 @@ class ComprasService
                 fechaFinalSuscripcion,
                 ultimaFechaPago,
                 proximaFechaPago
-            FROM `admanagerapiaccess-382213.UsuariosOPSA.Compras`
+            FROM `{$this->datasetId}.{$this->tableCompras}`
             $where
             ORDER BY fechaInicioSuscripcion DESC
         ";
@@ -198,7 +200,7 @@ class ComprasService
                 COUNT(*) AS cantidad,
                 SUM(IFNULL(precioFinal, 0)) AS valor
 
-            FROM `admanagerapiaccess-382213.UsuariosOPSA.Compras`
+            FROM `{$this->datasetId}.{$this->tableCompras}`
             $where
             GROUP BY idMoneda, dia, producto, estado, marca, canal, idFrecuencia
             ORDER BY dia ASC
@@ -229,7 +231,7 @@ class ComprasService
                 COUNT(*) AS cantidad,
                 SUM(IFNULL(precioFinal, 0)) AS valor
 
-            FROM `admanagerapiaccess-382213.UsuariosOPSA.Compras`
+            FROM `{$this->datasetId}.{$this->tableCompras}`
             $where
             GROUP BY idMoneda, dia, producto, estado, marca, canal, idFrecuencia
             ORDER BY dia ASC
@@ -311,5 +313,31 @@ class ComprasService
 
         $arr[$categoria] = ($arr[$categoria] ?? 0) + $valor;
     }
+
+    public function obtenerIngresosHistoricos(): array
+    {
+        $sql = "
+            SELECT
+                idMoneda,
+                SUM(
+                    CAST(precioFinal AS FLOAT64) * 
+                    CAST(cantidad AS FLOAT64)
+                ) AS total
+            FROM `{$this->datasetId}.{$this->viewComprasHistorico}`
+            WHERE estado = 'ACTIVE'
+            GROUP BY idMoneda;
+        ";
+
+        $query = $this->bigQuery->query($sql);
+        $rows  = iterator_to_array($this->bigQuery->runQuery($query));
+
+        $totales = [];
+        foreach ($rows as $row) {
+            $totales[$row['idMoneda']] = round((float)$row['total'], 2);
+        }
+
+        return $totales;
+    }
+
 
 }

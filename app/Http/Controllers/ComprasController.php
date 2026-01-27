@@ -33,8 +33,12 @@ class ComprasController extends Controller
             'search'      => $request->input('search'),
         ];
 
-        $resultado = $this->service->obtenerCompras($filtros);
-
-        return response()->json($resultado);
+        return response()->json([
+            'data' => $this->service->obtenerCompras($filtros)['data'],
+            'total_ingresos_actuales' =>
+                $this->service->obtenerCompras($filtros)['total_ingresos'],
+            'total_ingresos_historicos' =>
+                $this->service->obtenerIngresosHistoricos(),
+        ]);
     }
 }

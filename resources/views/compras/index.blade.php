@@ -1,3 +1,9 @@
+@php
+    use Carbon\Carbon;
+
+    $fechaInicio = Carbon::now()->startOfMonth()->format('Y-m-d');
+    $fechaFin = Carbon::now()->endOfMonth()->format('Y-m-d');
+@endphp
 @extends('layouts.app')
 
 @section('content')
@@ -12,12 +18,12 @@
 
                 <div class="col-md-3">
                     <label class="form-label">Fecha inicio</label>
-                    <input type="date" name="fecha_inicio" class="form-control">
+                    <input type="date" name="fecha_inicio" class="form-control" value="{{$fechaInicio}}">
                 </div>
 
                 <div class="col-md-3">
                     <label class="form-label">Fecha fin</label>
-                    <input type="date" name="fecha_fin" class="form-control">
+                    <input type="date" name="fecha_fin" class="form-control" value="{{$fechaFin}}">
                 </div>
 
                 {{-- Estado --}}
@@ -105,19 +111,40 @@
 
     {{-- Totales --}}
     <div class="row mb-3">
-        <div class="col-md-6">
-            <div class="card">
+        {{-- HISTÓRICOS --}}
+        <div class="col-md-3">
+            <div class="card border-secondary">
                 <div class="card-body">
-                    <h6 class="text-muted">Total ingresos (HNL)</h6>
-                    <h3 id="totalHNL">—</h3>
+                    <h6 class="text-muted">Ingresos históricos (HNL)</h6>
+                    <h3 id="totalHNLHistorico">—</h3>
                 </div>
             </div>
         </div>
-        <div class="col-md-6">
-            <div class="card">
+
+        <div class="col-md-3">
+            <div class="card border-secondary">
                 <div class="card-body">
-                    <h6 class="text-muted">Total ingresos (USD)</h6>
-                    <h3 id="totalUSD">—</h3>
+                    <h6 class="text-muted">Ingresos históricos (USD)</h6>
+                    <h3 id="totalUSDHistorico">—</h3>
+                </div>
+            </div>
+        </div>
+
+        {{-- ACTUALES --}}
+        <div class="col-md-3">
+            <div class="card border-primary">
+                <div class="card-body">
+                    <h6 class="text-muted">Ingresos actuales (HNL)</h6>
+                    <h3 id="totalHNLActual">—</h3>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3">
+            <div class="card border-primary">
+                <div class="card-body">
+                    <h6 class="text-muted">Ingresos actuales (USD)</h6>
+                    <h3 id="totalUSDActual">—</h3>
                 </div>
             </div>
         </div>
@@ -157,8 +184,6 @@
 <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.datatables.net/2.3.5/js/dataTables.min.js"></script>
 <script type="text/javascript" language="javascript" src="https://nightly.datatables.net/responsive/js/dataTables.responsive.min.js"></script>
-<!--<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>-->
 <script>
 let dataTable = null;
 
@@ -173,15 +198,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('limpiarFiltros').addEventListener('click', () => {
         form.reset();
-        //$('#estadoSelect').val(null).trigger('change');
         cargarCompras();
     });
-
-    /*$('#estadoSelect').select2({
-        placeholder: 'Seleccione estado(s)',
-        allowClear: true,
-        width: '100'
-    });*/
 
     document.querySelectorAll('.estado-checkbox')
         .forEach(cb => cb.addEventListener('change', syncEstados));
@@ -216,11 +234,27 @@ function cargarCompras() {
         .then(r => r.json())
         .then(response => {
 
-            document.getElementById('totalHNL').textContent =
-                response.total_ingresos?.HNL?.toLocaleString("es-HN", { minimumFractionDigits: 2 }) ?? '—';
+            // =====================
+            // HISTÓRICOS (NO CAMBIAN)
+            // =====================
+            document.getElementById('totalHNLHistorico').textContent =
+                response.total_ingresos_historicos?.HNL
+                    ?.toLocaleString("es-HN", { minimumFractionDigits: 2 }) ?? '—';
 
-            document.getElementById('totalUSD').textContent =
-                response.total_ingresos?.USD?.toLocaleString("en-US", { minimumFractionDigits: 2 }) ?? '—';
+            document.getElementById('totalUSDHistorico').textContent =
+                response.total_ingresos_historicos?.USD
+                    ?.toLocaleString("en-US", { minimumFractionDigits: 2 }) ?? '—';
+
+            // =====================
+            // ACTUALES (CON FILTROS)
+            // =====================
+            document.getElementById('totalHNLActual').textContent =
+                response.total_ingresos_actuales?.HNL
+                    ?.toLocaleString("es-HN", { minimumFractionDigits: 2 }) ?? '—';
+
+            document.getElementById('totalUSDActual').textContent =
+                response.total_ingresos_actuales?.USD
+                    ?.toLocaleString("en-US", { minimumFractionDigits: 2 }) ?? '—';
 
             renderTabla(response.data);
         });
