@@ -182,8 +182,6 @@ $(function () {
 
                 if (window._pestaniaActiva === 'avanzado') {
                     setTimeout(() => {
-                        $('#avanzadoFechaInicio').val($('#fechaInicio').val());
-                        $('#avanzadoFechaFin').val($('#fechaFin').val());
                         cargarEstadisticasAvanzadas();
                     }, 0);
                 }
@@ -577,14 +575,27 @@ function getFiltrosAvanzado() {
         profesion: $('#avanzadoProfesion').val(),
         pais: $('#avanzadoPais').val(),
         ciudad: $('#avanzadoCiudad').val(),
-        canal: $('#avanzadoCanal').val()
+        canal: $('#avanzadoCanal').val(),
+        respondieronEncuesta: $('#avanzadoRespondieronEncuesta').is(':checked') ? 1 : null
     };
 }
 
 function cargarEstadisticasAvanzadas() {
+    if (!$('#avanzadoFechaInicio').val()) {
+        $('#avanzadoFechaInicio').val($('#fechaInicio').val());
+    }
+    if (!$('#avanzadoFechaFin').val()) {
+        $('#avanzadoFechaFin').val($('#fechaFin').val());
+    }
     const filtros = getFiltrosAvanzado();
     let htmlPerfil = '';
     let htmlIP = '';
+
+    if (filtros.respondieronEncuesta) {
+        $('#kpiUserEncuestas').hide();
+    } else {
+        $('#kpiUserEncuestas').show();
+    }
     
     $.ajax({
         url: '/estadisticas/avanzado',

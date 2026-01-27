@@ -49,6 +49,13 @@ class EstadisticasAvanzadasService
                     AND u.fechaCreacion < DATETIME('{$filtros['fecha_fin']}') + INTERVAL 1 DAY";
         }
 
+        // Dentro de buildWhere()
+        if (!empty($filtros['respondieronEncuesta'])) {
+            // Solo usuarios que tienen registro en EncuestasTypeformDetalle
+            $where[] = "u.userid IN (SELECT userid FROM {$this->tablaEncuestasDetalle})";
+        }
+
+
         foreach (['marca','genero','estadoCivil','nivelEducativo','profesion','pais','canal'] as $campo)
         {
             if (!empty($filtros[$campo])) {

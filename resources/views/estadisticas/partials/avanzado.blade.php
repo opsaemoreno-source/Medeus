@@ -45,6 +45,14 @@
                         <option value="65+">65+</option>
                     </select>
                 </div>
+                <div class="col-md-2">
+                    <div class="form-check mt-4">
+                        <input class="form-check-input" type="checkbox" id="avanzadoRespondieronEncuesta">
+                        <label class="form-check-label" for="avanzadoRespondieronEncuesta">
+                            Respondieron Encuestas
+                        </label>
+                    </div>
+                </div>
             </div>
 
             <div class="row g-2 mt-2">
@@ -98,7 +106,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-4">
+        <div class="col-md-4" id="kpiUserEncuestas">
             <div class="card text-center">
                 <div class="card-body">
                     <h6 class="text-muted">
