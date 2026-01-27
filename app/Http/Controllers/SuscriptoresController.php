@@ -29,13 +29,26 @@ class SuscriptoresController extends Controller
         $search = $request->input('search.value', '');
         $fechaInicio = $request->input('fecha_inicio');
         $fechaFin = $request->input('fecha_fin');
+        $genero = $request->input('genero');
+        $pais   = $request->input('pais');
+        $ciudad = $request->input('ciudad');
+        $canal  = $request->input('canal');
+        $edad_min = $request->input('edad_min');
+        $edad_max = $request->input('edad_max');
+        $nivelEducativo = $request->input('nivelEducativo');
+        $profesion      = $request->input('profesion');
+        $estadoCivil    = $request->input('estadoCivil');
 
         $suscriptores = $this->bigQuery->obtenerSuscriptoresPaginadosConFiltro(
-            $start, $length, $search, $fechaInicio, $fechaFin
+            $start, $length, $search, $fechaInicio, $fechaFin,
+            $genero, $pais, $ciudad, $canal,
+            $edad_min, $edad_max, $nivelEducativo, $profesion, $estadoCivil
         );
 
         $totalRecords = $this->bigQuery->contarSuscriptoresConFiltro(
-            $search, $fechaInicio, $fechaFin
+            $search, $fechaInicio, $fechaFin,
+            $genero, $pais, $ciudad, $canal,
+            $edad_min, $edad_max, $nivelEducativo, $profesion, $estadoCivil
         );
 
         return response()->json([

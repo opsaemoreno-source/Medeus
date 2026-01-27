@@ -1,3 +1,9 @@
+@php
+    use Carbon\Carbon;
+
+    $fechaInicio = Carbon::now()->startOfMonth()->format('Y-m-d');
+    $fechaFin = Carbon::now()->endOfMonth()->format('Y-m-d');
+@endphp
 @extends('layouts.app')
 
 @section('content')
@@ -17,11 +23,11 @@
             <div class="row mb-3">
                 <div class="col-md-3">
                     <label>Fecha inicio</label>
-                    <input type="date" id="fecha_inicio" class="form-control">
+                    <input type="date" id="grafica_fecha_inicio" class="form-control" value="{{$fechaInicio}}">
                 </div>
                 <div class="col-md-3">
                     <label>Fecha fin</label>
-                    <input type="date" id="fecha_fin" class="form-control">
+                    <input type="date" id="grafica_fecha_fin" class="form-control" value="{{$fechaFin}}">
                 </div>
                 <div class="col-md-3 d-flex align-items-end">
                     <button class="btn btn-primary w-100" id="btnFiltrarEstadistica">
@@ -35,20 +41,99 @@
     </div>
 
     <div class="card p-3 mb-4">
+        <h5 class="mb-3">Filtros demográficos</h5>
+
         <div class="row">
             <div class="col-md-3">
-                <label>Fecha inicio:</label>
-                <input type="date" id="fechaInicio" class="form-control">
+                <label>Fecha inicio</label>
+                <input type="date" id="filtro_fecha_inicio" class="form-control" value="{{ $fechaInicio }}">
             </div>
+
             <div class="col-md-3">
-                <label>Fecha fin:</label>
-                <input type="date" id="fechaFin" class="form-control">
+                <label>Fecha fin</label>
+                <input type="date" id="filtro_fecha_fin" class="form-control" value="{{ $fechaFin }}">
             </div>
-            <div class="col-md-3 d-flex align-items-end">
-                <button id="btnFiltrar" class="btn btn-dark w-100">Aplicar filtro</button>
+
+            <div class="col-md-3">
+                <label>Género</label>
+                <select id="genero" class="form-control">
+                    <option value="">Todos</option>
+                    <option value="masculino">Masculino</option>
+                    <option value="femenino">Femenino</option>
+                </select>
             </div>
-            <div class="col-md-3 d-flex align-items-end">
-                <a id="btnExportar" class="btn btn-success w-100">Exportar CSV</a>
+
+            <div class="col-md-3">
+                <label>País</label>
+                <input type="text" id="pais" class="form-control" placeholder="Ej: Honduras">
+            </div>
+        </div>
+
+        <div class="row mt-3">
+            <div class="col-md-3">
+                <label>Ciudad</label>
+                <input type="text" id="ciudad" class="form-control">
+            </div>
+
+            <div class="col-md-3">
+                <label>Canal</label>
+                <select id="canal" class="form-control">
+                    <option value="">Todos</option>
+                    <option value="web">Web</option>
+                    <option value="app">App</option>
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label>Edad mínima</label>
+                <input type="number" id="edad_min" class="form-control">
+            </div>
+
+            <div class="col-md-3">
+                <label>Edad máxima</label>
+                <input type="number" id="edad_max" class="form-control">
+            </div>
+
+            <div class="col-md-3">
+                <label>Nivel educativo</label>
+                <select id="nivelEducativo" class="form-control">
+                    <option value="">Todos</option>
+                    <!-- Cargar dinámicamente si se desea -->
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label>Profesión</label>
+                <select id="profesion" class="form-control">
+                    <option value="">Todas</option>
+                </select>
+            </div>
+
+            <div class="col-md-3">
+                <label>Estado civil</label>
+                <select id="estadoCivil" class="form-control">
+                    <option value="">Todos</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <div class="col-md-3">
+                <button id="btnFiltrar" class="btn btn-dark w-100">
+                    Aplicar filtros
+                </button>
+            </div>
+
+            <div class="col-md-3">
+                <button id="btnLimpiar" class="btn btn-outline-secondary w-100">
+                    Limpiar
+                </button>
+            </div>
+
+            <div class="col-md-3">
+                <a id="btnExportar" class="btn btn-success w-100">
+                    Exportar CSV
+                </a>
             </div>
         </div>
     </div>
@@ -85,8 +170,17 @@ $(document).ready(function() {
         ajax: {
             url: '{{ route('suscriptores.data') }}',
             data: function (d) {
-                d.fecha_inicio = $('#fechaInicio').val();
-                d.fecha_fin = $('#fechaFin').val();
+                d.fecha_inicio    = $('#filtro_fecha_inicio').val();
+                d.fecha_fin       = $('#filtro_fecha_fin').val();
+                d.genero          = $('#genero').val();
+                d.pais            = $('#pais').val();
+                d.ciudad          = $('#ciudad').val();
+                d.canal           = $('#canal').val();
+                d.edad_min        = $('#edad_min').val();
+                d.edad_max        = $('#edad_max').val();
+                d.nivelEducativo  = $('#nivelEducativo').val();
+                d.profesion       = $('#profesion').val();
+                d.estadoCivil     = $('#estadoCivil').val();
             }
         },
         columns: [
@@ -97,34 +191,34 @@ $(document).ready(function() {
             { data: 'suscripcionActiva' },
             { data: 'estado' }
         ],
-        order: [[1, 'asc']],
-        responsive: true,
-        language: {
-            processing: "Cargando...",
-            search: "Buscar:",
-            lengthMenu: "Mostrar _MENU_ registros",
-            info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
-            infoEmpty: "No hay registros",
-            infoFiltered: "(filtrado de _MAX_ registros totales)",
-            paginate: {
-                first: "Primero",
-                last: "Último",
-                next: "Siguiente",
-                previous: "Anterior"
-            },
-        }
     });
 
     $('#btnFiltrar').on('click', function() {
         table.ajax.reload();
     });
 
-    $('#btnExportar').on('click', function() {
-        const inicio = $('#fechaInicio').val();
-        const fin = $('#fechaFin').val();
+    $('#btnLimpiar').on('click', function () {
+        $('input, select').val('');
+        table.ajax.reload();
+    });
 
-        window.location =
-            `/suscriptores/exportar?fecha_inicio=${inicio}&fecha_fin=${fin}&search=${table.search()}`;
+    $('#btnExportar').on('click', function () {
+        const params = new URLSearchParams({
+            fecha_inicio: $('#filtro_fecha_inicio').val(),
+            fecha_fin: $('#filtro_fecha_fin').val(),
+            genero: $('#genero').val(),
+            pais: $('#pais').val(),
+            ciudad: $('#ciudad').val(),
+            canal: $('#canal').val(),
+            edad_min: $('#edad_min').val(),
+            edad_max: $('#edad_max').val(),
+            nivelEducativo: $('#nivelEducativo').val(),
+            profesion: $('#profesion').val(),
+            estadoCivil: $('#estadoCivil').val(),
+            search: table.search()
+        });
+
+        window.location = `/suscriptores/exportar?${params.toString()}`;
     });
 });
 </script>
@@ -135,8 +229,8 @@ $(document).ready(function() {
 $(document).ready(function() {
 
     function cargarEstadistica() {
-        let inicio = $('#fecha_inicio').val();
-        let fin = $('#fecha_fin').val();
+        let inicio = $('#grafica_fecha_inicio').val();
+        let fin    = $('#grafica_fecha_fin').val();
 
         $.ajax({
             url: "{{ route('suscriptores.estadistica') }}",

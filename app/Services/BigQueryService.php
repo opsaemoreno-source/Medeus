@@ -181,7 +181,7 @@ class BigQueryService
     }
 
 
-    public function obtenerSuscriptoresPaginadosConFiltro($start, $length, $search, $fechaInicio, $fechaFin)
+    public function obtenerSuscriptoresPaginadosConFiltro($start, $length, $search, $fechaInicio, $fechaFin, $genero = null, $pais = null, $ciudad = null, $canal = null, $edad_min = null, $edad_max = null, $nivelEducativo = null, $profesion = null, $estadoCivil = null)
     {
         $filtro = [];
 
@@ -191,6 +191,18 @@ class BigQueryService
         if ($fechaInicio && $fechaFin) {
             $filtro[] = "fechaCreacion BETWEEN '$fechaInicio' AND '$fechaFin'";
         }
+        if ($genero) $filtro[] = "LOWER(genero) = LOWER('$genero')";
+        if ($pais) $filtro[] = "LOWER(pais) LIKE LOWER('%$pais%')";
+        if ($ciudad) $filtro[] = "LOWER(ciudad) LIKE LOWER('%$ciudad%')";
+        if ($canal) $filtro[] = "LOWER(canal) = LOWER('$canal')";
+        if ($edad_min || $edad_max) {
+            $edad_min = $edad_min ?? 0;
+            $edad_max = $edad_max ?? 200;
+            $filtro[] = "TIMESTAMP_DIFF(CURRENT_TIMESTAMP(), fechaNacimiento, YEAR) BETWEEN $edad_min AND $edad_max";
+        }
+        if ($nivelEducativo) $filtro[] = "LOWER(nivelEducativo) = LOWER('$nivelEducativo')";
+        if ($profesion) $filtro[] = "LOWER(profesion) = LOWER('$profesion')";
+        if ($estadoCivil) $filtro[] = "LOWER(estadoCivil) = LOWER('$estadoCivil')";
 
         $where = count($filtro) ? "WHERE " . implode(" AND ", $filtro) : "";
 
@@ -226,16 +238,24 @@ class BigQueryService
     }
 
 
-    public function contarSuscriptoresConFiltro($search, $fechaInicio, $fechaFin)
+    public function contarSuscriptoresConFiltro($search, $fechaInicio, $fechaFin, $genero = null, $pais = null, $ciudad = null, $canal = null, $edad_min = null, $edad_max = null, $nivelEducativo = null, $profesion = null, $estadoCivil = null)
     {
         $filtro = [];
 
-        if ($search) {
-            $filtro[] = "LOWER(CONCAT(nombre,' ',apellido)) LIKE LOWER('%$search%')";
+        if ($search) $filtro[] = "LOWER(CONCAT(nombre,' ',apellido)) LIKE LOWER('%$search%')";
+        if ($fechaInicio && $fechaFin) $filtro[] = "fechaCreacion BETWEEN '$fechaInicio' AND '$fechaFin'";
+        if ($genero) $filtro[] = "LOWER(genero) = LOWER('$genero')";
+        if ($pais) $filtro[] = "LOWER(pais) LIKE LOWER('%$pais%')";
+        if ($ciudad) $filtro[] = "LOWER(ciudad) LIKE LOWER('%$ciudad%')";
+        if ($canal) $filtro[] = "LOWER(canal) = LOWER('$canal')";
+        if ($edad_min || $edad_max) {
+            $edad_min = $edad_min ?? 0;
+            $edad_max = $edad_max ?? 200;
+            $filtro[] = "TIMESTAMP_DIFF(CURRENT_TIMESTAMP(), fechaNacimiento, YEAR) BETWEEN $edad_min AND $edad_max";
         }
-        if ($fechaInicio && $fechaFin) {
-            $filtro[] = "fechaCreacion BETWEEN '$fechaInicio' AND '$fechaFin'";
-        }
+        if ($nivelEducativo) $filtro[] = "LOWER(nivelEducativo) = LOWER('$nivelEducativo')";
+        if ($profesion) $filtro[] = "LOWER(profesion) = LOWER('$profesion')";
+        if ($estadoCivil) $filtro[] = "LOWER(estadoCivil) = LOWER('$estadoCivil')";
 
         $where = count($filtro) ? "WHERE " . implode(" AND ", $filtro) : "";
 
@@ -254,16 +274,24 @@ class BigQueryService
         return 0;
     }
 
-    public function obtenerSuscriptoresExportar($search, $fechaInicio, $fechaFin)
+    public function obtenerSuscriptoresExportar($search, $fechaInicio, $fechaFin, $genero = null, $pais = null, $ciudad = null, $canal = null, $edad_min = null, $edad_max = null, $nivelEducativo = null, $profesion = null, $estadoCivil = null)
     {
         $filtro = [];
 
-        if ($search) {
-            $filtro[] = "LOWER(CONCAT(nombre,' ',apellido)) LIKE LOWER('%$search%')";
+        if ($search) $filtro[] = "LOWER(CONCAT(nombre,' ',apellido)) LIKE LOWER('%$search%')";
+        if ($fechaInicio && $fechaFin) $filtro[] = "fechaCreacion BETWEEN '$fechaInicio' AND '$fechaFin'";
+        if ($genero) $filtro[] = "LOWER(genero) = LOWER('$genero')";
+        if ($pais) $filtro[] = "LOWER(pais) LIKE LOWER('%$pais%')";
+        if ($ciudad) $filtro[] = "LOWER(ciudad) LIKE LOWER('%$ciudad%')";
+        if ($canal) $filtro[] = "LOWER(canal) = LOWER('$canal')";
+        if ($edad_min || $edad_max) {
+            $edad_min = $edad_min ?? 0;
+            $edad_max = $edad_max ?? 200;
+            $filtro[] = "TIMESTAMP_DIFF(CURRENT_TIMESTAMP(), fechaNacimiento, YEAR) BETWEEN $edad_min AND $edad_max";
         }
-        if ($fechaInicio && $fechaFin) {
-            $filtro[] = "fechaCreacion BETWEEN '$fechaInicio' AND '$fechaFin'";
-        }
+        if ($nivelEducativo) $filtro[] = "LOWER(nivelEducativo) = LOWER('$nivelEducativo')";
+        if ($profesion) $filtro[] = "LOWER(profesion) = LOWER('$profesion')";
+        if ($estadoCivil) $filtro[] = "LOWER(estadoCivil) = LOWER('$estadoCivil')";
 
         $where = count($filtro) ? "WHERE " . implode(" AND ", $filtro) : "";
 

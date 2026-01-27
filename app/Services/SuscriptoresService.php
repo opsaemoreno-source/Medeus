@@ -8,8 +8,18 @@ use Exception;
 class SuscriptoresService
 {
     protected $bigQuery;
+    protected UsuariosSegmentacionService $segmentador;
     protected string $datasetId = 'UsuariosOPSA';
-    protected string $tableId   = 'vta_usuariosEvolok';
+    protected string $tablaUsuarios;
+    protected string $tablaCompras;
+    protected string $tablaEncuestas;
+    protected string $tablaEncuestasDetalle;
+    protected string $catalogoCiudades;
+    protected string $vtaUsuariosNormalizados;
+    protected string $vtaCiudadesNormalizadas;
+    protected string $tablaProfesiones;
+    protected string $tablaNivEducativo;
+    protected string $tablaPaises;
 
     public function __construct()
     {
@@ -17,6 +27,17 @@ class SuscriptoresService
             'projectId' => env('GOOGLE_PROJECT_ID'),
             'keyFilePath' => storage_path('app/google/bigquery.json')
         ]);
+
+        $this->segmentador = new UsuariosSegmentacionService();
+        $this->tablaUsuarios = "`admanagerapiaccess-382213.UsuariosOPSA.vta_usuariosEvolok`";
+        $this->tablaCompras = "`admanagerapiaccess-382213.UsuariosOPSA.Compras`";
+        $this->tablaEncuestas = "`admanagerapiaccess-382213.UsuariosOPSA.EncuestasTypeform`";
+        $this->tablaProfesiones = "`admanagerapiaccess-382213.UsuariosOPSA.data_profesion`";
+        $this->tablaNivEducativo = "`admanagerapiaccess-382213.UsuariosOPSA.data_nivelEducativo`";
+        $this->tablaPaises = "`admanagerapiaccess-382213.UsuariosOPSA.data_paises`";
+        $this->tablaEncuestasDetalle = "`admanagerapiaccess-382213.UsuariosOPSA.EncuestasTypeformDetalle`";
+        $this->catalogoCiudades = "`admanagerapiaccess-382213.UsuariosOPSA.catalogo_ciudadesNormalizacion`";
+        $this->vtaCiudadesNormalizadas = "`admanagerapiaccess-382213.UsuariosOPSA.vta_ciudadesNormalizadas`";
     }
 
     /**
@@ -84,7 +105,7 @@ class SuscriptoresService
                         ELSE COALESCE(NULLIF(TRIM($campo), ''), 'Sin datos')
                     END AS categoria,
                     COUNT(*) AS total
-                FROM `{$this->datasetId}.{$this->tableId}`
+                FROM {$this->tablaUsuarios}
                 $where
                 GROUP BY categoria
                 ORDER BY total DESC
@@ -94,7 +115,7 @@ class SuscriptoresService
                 SELECT 
                     COALESCE(NULLIF(TRIM(CAST($campo AS STRING)), ''), 'Sin datos') AS categoria,
                     COUNT(*) AS total
-                FROM `{$this->datasetId}.{$this->tableId}`
+                FROM {$this->tablaUsuarios}
                 $where
                 GROUP BY categoria
                 ORDER BY total DESC
@@ -129,7 +150,7 @@ class SuscriptoresService
                     'Sin datos'
                 ) AS categoria,
                 COUNT(*) AS total
-            FROM `{$this->datasetId}.{$this->tableId}` u
+            FROM {$this->tablaUsuarios} u
             LEFT JOIN `{$this->datasetId}.{$tablaCatalogo}` cat
                 ON CAST(cat.$idCatalogo AS STRING)
                 = CAST(u.$campoUsuario AS STRING)
@@ -168,7 +189,7 @@ class SuscriptoresService
     {
         // Selección de tabla y campo según el modo
         $tabla = $modo === 'original'
-            ? "`{$this->datasetId}.{$this->tableId}`"
+            ? "{$this->tablaUsuarios}"
             : "`{$this->datasetId}.vta_ciudadesNormalizadas`";
 
         // Condición WHERE
@@ -198,7 +219,7 @@ class SuscriptoresService
                 SELECT
                     COALESCE(c.ciudad_canonica, COALESCE(NULLIF(TRIM(u.ciudad), ''), 'Sin datos')) AS categoria,
                     COUNT(1) AS total
-                FROM `{$this->datasetId}.{$this->tableId}` u
+                FROM {$this->tablaUsuarios} u
                 LEFT JOIN $tabla c
                     ON REGEXP_REPLACE(
                         REGEXP_REPLACE(NORMALIZE(UPPER(u.ciudad), NFD), r'\\p{M}', ''),
@@ -242,7 +263,7 @@ class SuscriptoresService
                     COALESCE(NULLIF(TRIM(u.ciudad), ''), 'Sin datos')
                 ) AS categoria,
                 COUNT(1) AS total
-            FROM `{$this->datasetId}.{$this->tableId}` u
+            FROM {$this->tablaUsuarios} u
             LEFT JOIN `{$this->datasetId}.vta_ciudadesNormalizadas` c
                 ON REGEXP_REPLACE(
                     REGEXP_REPLACE(
@@ -260,5 +281,45 @@ class SuscriptoresService
         return $this->runQuery($query);
     }
 
+    public function obtenerUsuariosFiltrados(array $filtros, int $limit = 100, int $offset = 0): array
+    {
+        $where = $this->segmentador->buildWhere($filtros);
+
+        $sql = "
+            SELECT
+                u.userid,
+                u.nombre,
+                u.apellido,
+                u.correo,
+                u.genero,
+                u.pais,
+                u.ciudad,
+                u.fechaCreacion
+            FROM {$this->tablaUsuarios} u
+            $where
+            ORDER BY u.fechaCreacion DESC
+            LIMIT $limit OFFSET $offset
+        ";
+
+        return $this->runQueryMultipleRows($sql);
+    }
+
+    private function runQueryMultipleRows(string $query): array
+    {
+        $queryJob = $this->bigQuery->query($query);
+        $results = $this->bigQuery->runQuery($queryJob);
+
+        $data = [];
+        foreach ($results->rows() as $row) {
+            $arrayRow = [];
+            foreach ($row as $key => $value) {
+                $arrayRow[$key] = is_object($value) && method_exists($value, 'format') 
+                    ? $value->format('Y-m-d H:i:s') 
+                    : $value;
+            }
+            $data[] = $arrayRow;
+        }
+        return $data;
+    }
 
 }

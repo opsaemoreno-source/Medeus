@@ -7,6 +7,7 @@ use Google\Cloud\BigQuery\BigQueryClient;
 class EstadisticasAvanzadasService
 {
     protected BigQueryClient $bigQuery;
+    protected UsuariosSegmentacionService $segmentador;
     protected string $tablaUsuarios;
     protected string $tablaCompras;
     protected string $tablaEncuestas;
@@ -25,6 +26,8 @@ class EstadisticasAvanzadasService
             'keyFilePath' => storage_path('app/google/bigquery.json')
         ]);
 
+        $this->segmentador = new UsuariosSegmentacionService();
+
         $this->tablaUsuarios = "`admanagerapiaccess-382213.UsuariosOPSA.vta_usuariosEvolok`";
         $this->tablaCompras = "`admanagerapiaccess-382213.UsuariosOPSA.Compras`";
         $this->tablaEncuestas = "`admanagerapiaccess-382213.UsuariosOPSA.EncuestasTypeform`";
@@ -40,7 +43,7 @@ class EstadisticasAvanzadasService
     /**
      * Construye dinámicamente el WHERE a partir de filtros demográficos
      */
-    private function buildWhere(array $filtros): string
+    /*private function buildWhere(array $filtros): string
     {
         $where = [];
 
@@ -111,16 +114,16 @@ class EstadisticasAvanzadasService
         }
 
         return count($where) ? 'WHERE ' . implode(' AND ', $where) : '';
-    }
+    }*/
 
-    private function buildAndWhere(array $filtros): string
+    /*private function buildAndWhere(array $filtros): string
     {
-        $where = $this->buildWhere($filtros);
+        $where = $this->segmentador->buildWhere($filtros);
 
         return $where
             ? str_replace('WHERE', 'AND', $where)
             : '';
-    }
+    }*/
 
 
     private function esc($value): string
@@ -133,7 +136,7 @@ class EstadisticasAvanzadasService
      */
     public function usuariosQueRespondieronEncuestas(array $filtros = []): int
     {
-        $where = $this->buildWhere($filtros);
+        $where = $this->segmentador->buildWhere($filtros);
 
         $query = "
             SELECT
@@ -155,7 +158,7 @@ class EstadisticasAvanzadasService
      */
     public function usuariosConCompraYEncuesta(array $filtros = []): array
     {
-        $where = $this->buildWhere($filtros);
+        $where = $this->segmentador->buildWhere($filtros);
 
         $query = "
             SELECT
@@ -176,7 +179,7 @@ class EstadisticasAvanzadasService
      */
     public function conversionEncuestaCompra(array $filtros = []): array
     {
-        $where = $this->buildWhere($filtros);
+        $where = $this->segmentador->buildWhere($filtros);
 
         $query = "
             SELECT
@@ -197,7 +200,7 @@ class EstadisticasAvanzadasService
      */
     public function comprasPorRespuesta(array $filtros = [], int $topN = 20): array
     {
-        $where = $this->buildWhere($filtros);
+        $where = $this->segmentador->buildWhere($filtros);
 
         $query = "
             SELECT
@@ -263,7 +266,7 @@ class EstadisticasAvanzadasService
      */
     public function valoresDistintos(string $columna, array $filtros = []): array
     {
-        $where = $this->buildWhere($filtros);
+        $where = $this->segmentador->buildWhere($filtros);
 
         $query = "
             SELECT DISTINCT $columna
@@ -279,7 +282,7 @@ class EstadisticasAvanzadasService
 
     public function suscripcionesCompradas(array $filtros): array
     {
-        $where = $this->buildAndWhere($filtros);
+        $where = $this->segmentador->buildAndWhere($filtros);
 
         $sql = "
             SELECT
@@ -309,7 +312,7 @@ class EstadisticasAvanzadasService
 
     public function topPaisesPerfil(array $filtros): array
     {
-        $where = $this->buildAndWhere($filtros);
+        $where = $this->segmentador->buildAndWhere($filtros);
 
         $sql = "
             SELECT
@@ -331,7 +334,7 @@ class EstadisticasAvanzadasService
 
     public function topPaisesIP(array $filtros): array
     {
-        $where = $this->buildAndWhere($filtros);
+        $where = $this->segmentador->buildAndWhere($filtros);
 
         $sql = "
             SELECT
@@ -353,7 +356,7 @@ class EstadisticasAvanzadasService
 
     public function topCiudades(array $filtros): array
     {
-        $where = $this->buildAndWhere($filtros);
+        $where = $this->segmentador->buildAndWhere($filtros);
 
         $sql = "
             SELECT
@@ -385,7 +388,7 @@ class EstadisticasAvanzadasService
 
     public function topProfesiones(array $filtros): array
     {
-        $where = $this->buildAndWhere($filtros);
+        $where = $this->segmentador->buildAndWhere($filtros);
 
         $sql = "
             SELECT
@@ -407,7 +410,7 @@ class EstadisticasAvanzadasService
 
     public function topNivelesEducativos(array $filtros): array
     {
-        $where = $this->buildAndWhere($filtros);
+        $where = $this->segmentador->buildAndWhere($filtros);
 
         $sql = "
             SELECT
