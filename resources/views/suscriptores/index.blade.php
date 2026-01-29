@@ -65,7 +65,11 @@
 
             <div class="col-md-3">
                 <label>País</label>
-                <input type="text" id="pais" class="form-control" placeholder="Ej: Honduras">
+                <select id="pais" class="form-control">
+                    <option value="">Todos</option>
+                    <option value="web">Web</option>
+                    <option value="app">App</option>
+                </select>
             </div>
         </div>
 
@@ -113,6 +117,16 @@
                 <label>Estado civil</label>
                 <select id="estadoCivil" class="form-control">
                     <option value="">Todos</option>
+                </select>
+            </div>
+            
+            <div class="col-md-3">
+                <label>Marca</label>
+                <select id="marca" class="form-control">
+                    <option value="">Todos</option>
+                    <option value="laprensa">La Prensa</option>
+                    <option value="elheraldo">El Heraldo</option>
+                    <option value="blank">Vacíos</option>
                 </select>
             </div>
         </div>
@@ -181,6 +195,7 @@ $(document).ready(function() {
                 d.nivelEducativo  = $('#nivelEducativo').val();
                 d.profesion       = $('#profesion').val();
                 d.estadoCivil     = $('#estadoCivil').val();
+                d.marca           = $('#marca').val();
             }
         },
         columns: [
@@ -215,14 +230,37 @@ $(document).ready(function() {
             nivelEducativo: $('#nivelEducativo').val(),
             profesion: $('#profesion').val(),
             estadoCivil: $('#estadoCivil').val(),
+            marca: $('#marca').val(),
             search: table.search()
         });
 
         window.location = `/suscriptores/exportar?${params.toString()}`;
     });
+
+    $.ajax({
+            url: "{{ route('suscriptores.catalogos') }}",
+            success: function(res) {
+                const selectCivil = $('#estadoCivil');
+                const selectPais = $('#pais');
+                const selectEducativo = $('#nivelEducativo');
+                const selectProfesion = $('#profesion');
+                selectCivil.empty();
+                selectPais.empty();
+                selectEducativo.empty();
+                selectProfesion.empty();
+                selectCivil.append(`<option value="">Todos</option>`);
+                selectPais.append(`<option value="">Todos</option>`);
+                selectEducativo.append(`<option value="">Todos</option>`);
+                selectProfesion.append(`<option value="">Todos</option>`);
+                (res.civil || []).forEach(m => selectCivil.append(`<option value="${m.id}">${m.label}</option>`));
+                (res.paises || []).forEach(m => selectPais.append(`<option value="${m.id}">${m.label}</option>`));
+                (res.educativo || []).forEach(m => selectEducativo.append(`<option value="${m.id}">${m.label}</option>`));
+                (res.profesiones || []).forEach(m => selectProfesion.append(`<option value="${m.id}">${m.label}</option>`));
+            }
+        });
 });
 </script>
-
+ 
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 <script>

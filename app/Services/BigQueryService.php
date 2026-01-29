@@ -7,8 +7,16 @@ use Google\Cloud\BigQuery\BigQueryClient;
 class BigQueryService
 {
     protected $bigQuery;
-    protected $tablaUsuarios;
-    protected $tablaEncuestas;
+    protected string $tablaUsuarios;
+    protected string $tablaCompras;
+    protected string $tablaEncuestas;
+    protected string $tablaEncuestasDetalle;
+    protected string $catalogoCiudades;
+    protected string $vtaUsuariosNormalizados;
+    protected string $vtaCiudadesNormalizadas;
+    protected string $tablaProfesiones;
+    protected string $tablaNivEducativo;
+    protected string $tablaPaises;
 
     public function __construct()
     {
@@ -17,7 +25,14 @@ class BigQueryService
             'keyFilePath' => storage_path('app/google/bigquery.json')
         ]);
         $this->tablaUsuarios = "`admanagerapiaccess-382213.UsuariosOPSA.vta_usuariosEvolok`";
+        $this->tablaCompras = "`admanagerapiaccess-382213.UsuariosOPSA.Compras`";
         $this->tablaEncuestas = "`admanagerapiaccess-382213.UsuariosOPSA.EncuestasTypeform`";
+        $this->tablaProfesiones = "`admanagerapiaccess-382213.UsuariosOPSA.data_profesion`";
+        $this->tablaNivEducativo = "`admanagerapiaccess-382213.UsuariosOPSA.data_nivelEducativo`";
+        $this->tablaPaises = "`admanagerapiaccess-382213.UsuariosOPSA.data_paises`";
+        $this->tablaEncuestasDetalle = "`admanagerapiaccess-382213.UsuariosOPSA.EncuestasTypeformDetalle`";
+        $this->catalogoCiudades = "`admanagerapiaccess-382213.UsuariosOPSA.catalogo_ciudadesNormalizacion`";
+        $this->vtaCiudadesNormalizadas = "`admanagerapiaccess-382213.UsuariosOPSA.vta_ciudadesNormalizadas`";
     }
 
     public function obtenerEncuestas()
@@ -181,7 +196,7 @@ class BigQueryService
     }
 
 
-    public function obtenerSuscriptoresPaginadosConFiltro($start, $length, $search, $fechaInicio, $fechaFin, $genero = null, $pais = null, $ciudad = null, $canal = null, $edad_min = null, $edad_max = null, $nivelEducativo = null, $profesion = null, $estadoCivil = null)
+    public function obtenerSuscriptoresPaginadosConFiltro($start, $length, $search, $fechaInicio, $fechaFin, $genero = null, $pais = null, $ciudad = null, $canal = null, $marca = null, $edad_min = null, $edad_max = null, $nivelEducativo = null, $profesion = null, $estadoCivil = null)
     {
         $filtro = [];
 
@@ -194,7 +209,18 @@ class BigQueryService
         if ($genero) $filtro[] = "LOWER(genero) = LOWER('$genero')";
         if ($pais) $filtro[] = "LOWER(pais) LIKE LOWER('%$pais%')";
         if ($ciudad) $filtro[] = "LOWER(ciudad) LIKE LOWER('%$ciudad%')";
-        if ($canal) $filtro[] = "LOWER(canal) = LOWER('$canal')";
+        if ($canal) $filtro[] = "TRIM(LOWER(canal)) = LOWER('$canal')";
+        if ($marca)
+        {
+            if($marca != "blank")
+            {
+                $filtro[] = "TRIM(LOWER(marca)) = LOWER('$marca')";
+            }
+            else
+            {
+                $filtro[] = "(TRIM(marca) = '' OR marca IS NULL)";
+            }
+        }
         if ($edad_min || $edad_max) {
             $edad_min = $edad_min ?? 0;
             $edad_max = $edad_max ?? 200;
@@ -238,7 +264,7 @@ class BigQueryService
     }
 
 
-    public function contarSuscriptoresConFiltro($search, $fechaInicio, $fechaFin, $genero = null, $pais = null, $ciudad = null, $canal = null, $edad_min = null, $edad_max = null, $nivelEducativo = null, $profesion = null, $estadoCivil = null)
+    public function contarSuscriptoresConFiltro($search, $fechaInicio, $fechaFin, $genero = null, $pais = null, $ciudad = null, $canal = null, $marca = null, $edad_min = null, $edad_max = null, $nivelEducativo = null, $profesion = null, $estadoCivil = null)
     {
         $filtro = [];
 
@@ -248,6 +274,17 @@ class BigQueryService
         if ($pais) $filtro[] = "LOWER(pais) LIKE LOWER('%$pais%')";
         if ($ciudad) $filtro[] = "LOWER(ciudad) LIKE LOWER('%$ciudad%')";
         if ($canal) $filtro[] = "LOWER(canal) = LOWER('$canal')";
+        if ($marca)
+        {
+            if($marca != "blank")
+            {
+                $filtro[] = "TRIM(LOWER(marca)) = LOWER('$marca')";
+            }
+            else
+            {
+                $filtro[] = "(TRIM(marca) = '' OR marca IS NULL)";
+            }
+        }
         if ($edad_min || $edad_max) {
             $edad_min = $edad_min ?? 0;
             $edad_max = $edad_max ?? 200;
@@ -274,7 +311,7 @@ class BigQueryService
         return 0;
     }
 
-    public function obtenerSuscriptoresExportar($search, $fechaInicio, $fechaFin, $genero = null, $pais = null, $ciudad = null, $canal = null, $edad_min = null, $edad_max = null, $nivelEducativo = null, $profesion = null, $estadoCivil = null)
+    public function obtenerSuscriptoresExportar($search, $fechaInicio, $fechaFin, $genero = null, $pais = null, $ciudad = null, $canal = null, $marca = null, $edad_min = null, $edad_max = null, $nivelEducativo = null, $profesion = null, $estadoCivil = null)
     {
         $filtro = [];
 
@@ -284,6 +321,17 @@ class BigQueryService
         if ($pais) $filtro[] = "LOWER(pais) LIKE LOWER('%$pais%')";
         if ($ciudad) $filtro[] = "LOWER(ciudad) LIKE LOWER('%$ciudad%')";
         if ($canal) $filtro[] = "LOWER(canal) = LOWER('$canal')";
+        if ($marca)
+        {
+            if($marca != "blank")
+            {
+                $filtro[] = "TRIM(LOWER(marca)) = LOWER('$marca')";
+            }
+            else
+            {
+                $filtro[] = "(TRIM(marca) = '' OR marca IS NULL)";
+            }
+        }
         if ($edad_min || $edad_max) {
             $edad_min = $edad_min ?? 0;
             $edad_max = $edad_max ?? 200;
@@ -304,6 +352,51 @@ class BigQueryService
 
         $results = $this->bigQuery->runQuery($this->bigQuery->query($query));
 
+        return iterator_to_array($results->rows());
+    }
+
+    public function catalogoEstadoCivil()
+    {
+        $sql = "
+            SELECT idCivil AS id, label
+            FROM `admanagerapiaccess-382213.UsuariosOPSA.data_estadoCivil`
+            ORDER BY label
+        ";
+        $results = $this->bigQuery->runQuery($this->bigQuery->query($sql));
+        return iterator_to_array($results->rows());
+    }
+
+    public function catalogoNivelEducativo()
+    {
+        $sql = "
+            SELECT idNivEducativo AS id, label
+            FROM {$this->tablaNivEducativo}
+            ORDER BY label
+        ";
+        $results = $this->bigQuery->runQuery($this->bigQuery->query($sql));
+        return iterator_to_array($results->rows());
+    }
+
+    public function catalogoProfesiones()
+    {
+        $sql = "
+            SELECT idProfesion AS id, label
+            FROM {$this->tablaProfesiones}
+            ORDER BY label
+        ";
+        $results = $this->bigQuery->runQuery($this->bigQuery->query($sql));
+        return iterator_to_array($results->rows());
+    }
+
+    public function catalogoPaises()
+    {
+        $sql = "
+            SELECT DISTINCT idPaisAlter AS id, label
+            FROM {$this->tablaPaises}
+            WHERE idPaisAlter IS NOT NULL
+            ORDER BY label
+        ";
+        $results = $this->bigQuery->runQuery($this->bigQuery->query($sql));
         return iterator_to_array($results->rows());
     }
 

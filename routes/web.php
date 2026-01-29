@@ -36,6 +36,9 @@ Route::get('/suscriptores/estadistica', [SuscriptoresController::class, 'estadis
 Route::get('/suscriptores/exportar', [SuscriptoresController::class, 'exportar'])
     ->middleware('auth')
     ->name('suscriptores.exportar');
+Route::get('/suscriptores/catalogos', [SuscriptoresController::class, 'getCatalogos'])
+    ->middleware('auth')
+    ->name('suscriptores.catalogos');
 
 
 Route::middleware(['auth'])->group(function () {

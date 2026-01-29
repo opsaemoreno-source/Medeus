@@ -6,6 +6,7 @@ use Google\Cloud\BigQuery\BigQueryClient;
 
 class UsuariosSegmentacionService
 {
+    protected BigQueryClient $bigQuery;
     protected string $tablaUsuarios;
     protected string $tablaCompras;
     protected string $tablaEncuestas;
@@ -16,6 +17,24 @@ class UsuariosSegmentacionService
     protected string $tablaProfesiones;
     protected string $tablaNivEducativo;
     protected string $tablaPaises;
+
+    public function __construct()
+    {
+        $this->bigQuery = new BigQueryClient([
+            'projectId' => env('GOOGLE_PROJECT_ID'),
+            'keyFilePath' => storage_path('app/google/bigquery.json')
+        ]);        
+
+        $this->tablaUsuarios = "`admanagerapiaccess-382213.UsuariosOPSA.vta_usuariosEvolok`";
+        $this->tablaCompras = "`admanagerapiaccess-382213.UsuariosOPSA.Compras`";
+        $this->tablaEncuestas = "`admanagerapiaccess-382213.UsuariosOPSA.EncuestasTypeform`";
+        $this->tablaProfesiones = "`admanagerapiaccess-382213.UsuariosOPSA.data_profesion`";
+        $this->tablaNivEducativo = "`admanagerapiaccess-382213.UsuariosOPSA.data_nivelEducativo`";
+        $this->tablaPaises = "`admanagerapiaccess-382213.UsuariosOPSA.data_paises`";
+        $this->tablaEncuestasDetalle = "`admanagerapiaccess-382213.UsuariosOPSA.EncuestasTypeformDetalle`";
+        $this->catalogoCiudades = "`admanagerapiaccess-382213.UsuariosOPSA.catalogo_ciudadesNormalizacion`";
+        $this->vtaCiudadesNormalizadas = "`admanagerapiaccess-382213.UsuariosOPSA.vta_ciudadesNormalizadas`";
+    }
 
     public function buildWhere(array $filtros): string
     {

@@ -37,17 +37,18 @@ class SuscriptoresController extends Controller
         $edad_max = $request->input('edad_max');
         $nivelEducativo = $request->input('nivelEducativo');
         $profesion      = $request->input('profesion');
+        $marca          = $request->input('marca');
         $estadoCivil    = $request->input('estadoCivil');
 
         $suscriptores = $this->bigQuery->obtenerSuscriptoresPaginadosConFiltro(
             $start, $length, $search, $fechaInicio, $fechaFin,
-            $genero, $pais, $ciudad, $canal,
+            $genero, $pais, $ciudad, $canal, $marca,
             $edad_min, $edad_max, $nivelEducativo, $profesion, $estadoCivil
         );
 
         $totalRecords = $this->bigQuery->contarSuscriptoresConFiltro(
             $search, $fechaInicio, $fechaFin,
-            $genero, $pais, $ciudad, $canal,
+            $genero, $pais, $ciudad, $canal, $marca,
             $edad_min, $edad_max, $nivelEducativo, $profesion, $estadoCivil
         );
 
@@ -55,7 +56,7 @@ class SuscriptoresController extends Controller
             'draw' => intval($request->input('draw')),
             'recordsTotal' => $totalRecords,
             'recordsFiltered' => $totalRecords,
-            'data' => $suscriptores,
+            'data' => $suscriptores
         ]);
     }
 
@@ -75,9 +76,19 @@ class SuscriptoresController extends Controller
         $search = $request->input('search');
         $fechaInicio = $request->input('fecha_inicio');
         $fechaFin = $request->input('fecha_fin');
+        $genero = $request->input('genero') ?? null;
+        $pais = $request->input('pais') ?? null;
+        $ciudad = $request->input('ciudad') ?? null;
+        $canal = $request->input('canal') ?? null;
+        $marca = $request->input('marca') ?? null;
+        $edad_min = $request->input('edad_min') ?? null;
+        $edad_max = $request->input('edad_max') ?? null;
+        $nivelEducativo = $request->input('nivelEducativo') ?? null;
+        $profesion = $request->input('profesion') ?? null;
+        $estadoCivil = $request->input('estadoCivil') ?? null;
 
-        $data = $this->bigQuery->obtenerSuscriptoresExportar($search, $fechaInicio, $fechaFin);
-
+        $data = $this->bigQuery->obtenerSuscriptoresExportar($search, $fechaInicio, $fechaFin, $genero, $pais, $ciudad, $canal, $marca, $edad_min, $edad_max, $nivelEducativo, $profesion, $estadoCivil);
+        
         if (empty($data)) {
             return back()->with('error', 'No hay datos para exportar.');
         }
@@ -118,5 +129,15 @@ class SuscriptoresController extends Controller
             'Content-Type' => 'text/csv',
             'Content-Disposition' => "attachment; filename=\"$filename\""
         ]);
+    }
+
+    public function getCatalogos()
+    {
+        return $data = [ 
+            'civil' => $this->bigQuery->catalogoEstadoCivil(),
+            'educativo' => $this->bigQuery->catalogoNivelEducativo(),
+            'paises' => $this->bigQuery->catalogoPaises(),
+            'profesiones' => $this->bigQuery->catalogoProfesiones()
+        ];
     }
 }
