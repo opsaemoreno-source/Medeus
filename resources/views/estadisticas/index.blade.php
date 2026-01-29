@@ -580,6 +580,125 @@ function getFiltrosAvanzado() {
     };
 }
 
+function cargarTodo()
+{
+    const today = new Date();
+    const isoDate = today.toISOString().split('T')[0]; // Gets only the date part
+
+    const filtros = {
+        fecha_inicio: '2020-01-01',
+        fecha_fin: isoDate,
+    };
+    let htmlPerfil = '';
+    let htmlIP = '';
+
+    $.ajax({
+        url: '/estadisticas/avanzado',
+        method: 'GET',
+        data: filtros,
+        beforeSend: () => {
+            $('#avanzadoKPIs h3').text('Cargando...');
+        },
+        success: function(res) {
+            // KPIs
+            $('#kpiUsuarios').text(res.data.usuariosMixtos.total_usuarios || 0);
+            $('#kpiCompras').text(res.data.usuariosMixtos.total_compras || 0);
+            $('#kpiUsuariosEncuestas').text(res.data.usuariosRespondieronEncuesta ?? 0);
+
+            if (res.data.suscripciones) {
+                $('#kpiSuscripciones').text(
+                    res.data.suscripciones.total_suscripciones || 0
+                );
+
+                $('#kpiMontoUSD').text(
+                    '$ ' + (res.data.suscripciones.monto_usd || 0).toLocaleString()
+                );
+
+                $('#kpiMontoHNL').text(
+                    'L ' + (res.data.suscripciones.monto_hnl || 0).toLocaleString()
+                );
+            }
+            if (res.data.topCiudades) {
+                renderTopCiudades(res.data.topCiudades);
+            }
+            if (res.data.topProfesiones) {
+                renderTopProfesiones(res.data.topProfesiones);
+            }
+            if (res.data.topNivelesEducativos) {
+                renderTopNivelesEducativos(res.data.topNivelesEducativos);
+            }
+
+            const comprasRespuesta = res.data.comprasPorRespuesta || [];
+
+            // Limitar visualización si hay muchas respuestas
+            const topRespuestas = comprasRespuesta.slice(0, 20);
+            
+            // Llenar dropdown Marca
+            const selectMarca = $('#avanzadoMarca');
+            selectMarca.empty();
+            selectMarca.append(`<option value="">Todos</option>`);
+            (res.data.marcas || []).forEach(m => selectMarca.append(`<option value="${m}">${m}</option>`));
+
+            // Llenar dropdown Canal
+            const selectCanal = $('#avanzadoCanal');
+            selectCanal.empty();
+            selectCanal.append(`<option value="">Todos</option>`);
+            (res.data.canales || []).forEach(c => selectCanal.append(`<option value="${c}">${c}</option>`));
+
+            (res.data.topPaisesPerfil || []).forEach(row => {
+                htmlPerfil += `
+                    <tr>
+                        <td>${row.pais}</td>
+                        <td class="text-end">${row.total}</td>
+                    </tr>`;
+            });
+            $('#tablaTopPaisPerfil').html(htmlPerfil);
+            // Top Países IP
+            
+            (res.data.topPaisesIP || []).forEach(row => {
+                htmlIP += `
+                    <tr>
+                        <td>${row.pais}</td>
+                        <td class="text-end">${row.total}</td>
+                    </tr>`;
+            });
+            $('#tablaTopPaisIP').html(htmlIP);
+
+            // Estado Civil
+            const selEstado = $('#avanzadoEstadoCivil');
+            selEstado.empty().append('<option value="">Todos</option>');
+            (res.data.catalogos.estadoCivil || []).forEach(e =>
+                selEstado.append(`<option value="${e.id}">${e.label}</option>`)
+            );
+
+            // Nivel Educativo
+            const selNivel = $('#avanzadoNivelEducativo');
+            selNivel.empty().append('<option value="">Todos</option>');
+            (res.data.catalogos.nivelEducativo || []).forEach(e =>
+                selNivel.append(`<option value="${e.id}">${e.label}</option>`)
+            );
+
+            // Profesión
+            const selProf = $('#avanzadoProfesion');
+            selProf.empty().append('<option value="">Todos</option>');
+            (res.data.catalogos.profesion || []).forEach(e =>
+                selProf.append(`<option value="${e.id}">${e.label}</option>`)
+            );
+
+            // País
+            const selPais = $('#avanzadoPais');
+            selPais.empty().append('<option value="">Todos</option>');
+            (res.data.catalogos.pais || []).forEach(e =>
+                selPais.append(`<option value="${e.id}">${e.label}</option>`)
+            );
+
+        },
+        error: function(err) {
+            console.error('Error al cargar estadísticas avanzadas', err);
+        }
+    });
+}
+
 function cargarEstadisticasAvanzadas() {
     if (!$('#avanzadoFechaInicio').val()) {
         $('#avanzadoFechaInicio').val($('#fechaInicio').val());

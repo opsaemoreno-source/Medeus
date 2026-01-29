@@ -143,7 +143,7 @@ class ComprasService
         // RESTO DE FILTROS (sin cambios)
         // =========================
         if (!empty($filtros['marca'])) {
-            $conditions[] = "marca = '{$filtros['marca']}'";
+            $conditions[] = "TRIM(LOWER(marca)) = '{$filtros['marca']}'";
         }
 
         if (!empty($filtros['canal'])) {

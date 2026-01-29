@@ -85,6 +85,9 @@
             <div class="mt-3">
                 <button id="aplicarFiltrosAvanzado" class="btn btn-primary btn-sm">Aplicar filtros</button>
             </div>
+            <div class="mt-3">
+                <button id="mostrarTodo" class="btn btn-info btn-sm">Mostrar Todo</button>
+            </div>
         </div>
     </div>
 
@@ -254,5 +257,9 @@
 <script>
     $(document).on('click', '#aplicarFiltrosAvanzado', function () {
         cargarEstadisticasAvanzadas();
+    });
+
+    $(document).on('click', '#mostrarTodo', function () {
+        cargarTodo();
     });
 </script>
