@@ -156,8 +156,9 @@
             <table class="table table-striped table-hover w-100 display" id="tablaCompras" style="width:100%">
                 <thead>
                     <tr>
-                        <th>Usuario</th>
-                        <th>Compra</th>
+                        <th>Fecha creación</th>
+                        <th>Nombre</th>
+                        <th>Correo</th>
                         <th>Producto</th>
                         <th>Plan</th>
                         <th>Precio</th>
@@ -168,6 +169,8 @@
                         <th>Tipo pago</th>
                         <th>Inicio</th>
                         <th>Fin</th>
+                        <th>Usuario</th>
+                        <th>Compra</th>
                         <th></th>
                     </tr>
                 </thead>
@@ -231,7 +234,15 @@ function cargarCompras() {
     const params = new URLSearchParams(new FormData(document.getElementById('filtrosCompras')));
 
     fetch(`{{ route('compras.data') }}?${params}`)
-        .then(r => r.json())
+        .then(r => {
+            if (!r.ok) {
+                return r.text().then(text => {
+                    const msg = text ? text.substring(0, 500) : `${r.status} ${r.statusText}`;
+                    throw new Error(`Server error: ${msg}`);
+                });
+            }
+            return r.json();
+        })
         .then(response => {
 
             // =====================
@@ -257,6 +268,16 @@ function cargarCompras() {
                     ?.toLocaleString("en-US", { minimumFractionDigits: 2 }) ?? '—';
 
             renderTabla(response.data);
+        })
+        .catch(err => {
+            console.error('Error cargando compras:', err);
+            // limpiar UI y mostrar mensaje sencillo
+            document.getElementById('totalHNLHistorico').textContent = '—';
+            document.getElementById('totalUSDHistorico').textContent = '—';
+            document.getElementById('totalHNLActual').textContent = '—';
+            document.getElementById('totalUSDActual').textContent = '—';
+            renderTabla([]);
+            alert('Error cargando compras: ' + err.message);
         });
 }
 
@@ -269,8 +290,9 @@ function renderTabla(data) {
     const tbody = document.querySelector('#tablaCompras tbody');
     tbody.innerHTML = data.map(row => `
         <tr>
-            <td>${row.idUsuario}</td>
-            <td>${row.idCompra}</td>
+            <td>${row.fechaCreacion ?? '—'}</td>
+            <td>${row.nombreUsuario ?? '—'}</td>
+            <td>${row.correo ?? '—'}</td>
             <td>${row.producto}</td>
             <td>${row.plan}</td>
             <td>${row.precio ?? '—'} ${row.moneda ?? ''}</td>
@@ -281,6 +303,8 @@ function renderTabla(data) {
             <td>${row.tipoPago}</td>
             <td>${row.inicio ?? '—'}</td>
             <td>${row.fin ?? '—'}</td>
+            <td>${row.idUsuario}</td>
+            <td>${row.idCompra}</td>
             <td>
                 <button class="btn btn-sm btn-outline-primary">Ver</button>
             </td>
@@ -288,7 +312,7 @@ function renderTabla(data) {
     `).join('');
 
     dataTable = $('#tablaCompras').DataTable({
-    order: [[0, 'asc']],
+    order: [[0, 'desc']],
     responsive: true,
     initComplete: function() {
 		$(this.api().table().container()).find('input').attr('autocomplete', 'off');

@@ -27,24 +27,30 @@ class ComprasService
 
         $sql = "
             SELECT
-                idUsuario,
-                idCompra,
-                nombreProductoDisplay,
-                nombrePlanPagoDisplay,
-                precioFinal,
-                idMoneda,
-                cantidad,
-                estado,
-                marca,
-                canal,
-                tipoPago,
-                fechaInicioSuscripcion,
-                fechaFinalSuscripcion,
-                ultimaFechaPago,
-                proximaFechaPago
-            FROM `{$this->datasetId}.{$this->tableCompras}`
+                c.idUsuario            AS idUsuario,
+                c.idCompra             AS idCompra,
+                c.nombreProductoDisplay AS nombreProductoDisplay,
+                c.nombrePlanPagoDisplay AS nombrePlanPagoDisplay,
+                c.precioFinal          AS precioFinal,
+                c.idMoneda             AS idMoneda,
+                c.cantidad             AS cantidad,
+                c.estado               AS estado,
+                c.marca                AS marca,
+                c.canal                AS canal,
+                c.tipoPago             AS tipoPago,
+                c.fechaInicioSuscripcion AS fechaInicioSuscripcion,
+                c.fechaFinalSuscripcion  AS fechaFinalSuscripcion,
+                c.ultimaFechaPago       AS ultimaFechaPago,
+                c.proximaFechaPago      AS proximaFechaPago,
+                c.fechaCreacion         AS compraFechaCreacion,
+                u.nombre                AS usuarioNombre,
+                u.apellido              AS usuarioApellido,
+                u.correo                AS usuarioCorreo
+            FROM `{$this->datasetId}.{$this->tableCompras}` AS c
+            LEFT JOIN `{$this->datasetId}.vta_usuariosEvolok` u
+                ON c.idUsuario = u.userid
             $where
-            ORDER BY fechaInicioSuscripcion DESC
+            ORDER BY c.fechaInicioSuscripcion DESC
         ";
 
         $query = $this->bigQuery->query($sql);
@@ -62,9 +68,19 @@ class ComprasService
         $totales = [];
 
         foreach ($rows as $row) {
-            if ($row['estado'] === 'ACTIVE' && $row['precioFinal'] !== null) {
+            if (($row['estado'] ?? null) === 'ACTIVE' && ($row['precioFinal'] ?? null) !== null) {
                 $moneda = $row['idMoneda'] ?? 'UNKNOWN';
-                $totales[$moneda] = ($totales[$moneda] ?? 0) + ((float)$row['precioFinal'] * (int)$row['cantidad']);
+
+                // Normalizar precioFinal (BigQuery puede devolver objetos Numeric)
+                $precioFinal = $row['precioFinal'];
+                if (is_object($precioFinal)) {
+                    $precioFinal = (string)$precioFinal;
+                }
+
+                $precioFloat = is_numeric($precioFinal) ? (float)$precioFinal : 0.0;
+                $cantidadInt  = is_numeric($row['cantidad']) ? (int)$row['cantidad'] : 0;
+
+                $totales[$moneda] = ($totales[$moneda] ?? 0) + ($precioFloat * $cantidadInt);
             }
         }
 
@@ -95,6 +111,11 @@ class ComprasService
                 'fin'       => $this->formatDate($row['fechaFinalSuscripcion']),
                 'ultimoPago'=> $this->formatDate($row['ultimaFechaPago']),
                 'proximoPago'=> $this->formatDate($row['proximaFechaPago']),
+
+                // datos de usuario (join a vta_usuariosEvolok)
+                'fechaCreacion' => $this->formatDate($row['compraFechaCreacion'] ?? null),
+                'nombreUsuario' => ($row['usuarioNombre'].' '.$row['usuarioApellido']) ?? ($row['nombre'].' '.$row['apellido'] ?? null),
+                'correo'        => $row['usuarioCorreo'] ?? ($row['correo'] ?? null),
             ];
         }, $rows);
     }
@@ -131,11 +152,11 @@ class ComprasService
                         ', ',
                         array_map(fn($e) => "'" . addslashes($e) . "'", $estados)
                     );
-                    $conditions[] = "estado IN ($estadosSQL)";
+                    $conditions[] = "c.estado IN ($estadosSQL)";
                 }
 
             } else {
-                $conditions[] = "estado = '" . addslashes($filtros['estado']) . "'";
+                $conditions[] = "c.estado = '" . addslashes($filtros['estado']) . "'";
             }
         }
 
@@ -143,39 +164,39 @@ class ComprasService
         // RESTO DE FILTROS (sin cambios)
         // =========================
         if (!empty($filtros['marca'])) {
-            $conditions[] = "TRIM(LOWER(marca)) = '{$filtros['marca']}'";
+            $conditions[] = "TRIM(LOWER(c.marca)) = '{$filtros['marca']}'";
         }
 
         if (!empty($filtros['canal'])) {
-            $conditions[] = "canal = '{$filtros['canal']}'";
+            $conditions[] = "c.canal = '{$filtros['canal']}'";
         }
 
         if (!empty($filtros['tipoPago'])) {
-            $conditions[] = "tipoPago = '{$filtros['tipoPago']}'";
+            $conditions[] = "c.tipoPago = '{$filtros['tipoPago']}'";
         }
 
         if (!empty($filtros['producto'])) {
-            $conditions[] = "nombreProductoDisplay = '{$filtros['producto']}'";
+            $conditions[] = "c.nombreProductoDisplay = '{$filtros['producto']}'";
         }
 
         if (!empty($filtros['plan'])) {
-            $conditions[] = "nombrePlanPagoDisplay = '{$filtros['plan']}'";
+            $conditions[] = "c.nombrePlanPagoDisplay = '{$filtros['plan']}'";
         }
 
         if (!empty($filtros['search'])) {
             $search = addslashes($filtros['search']);
             $conditions[] = "(
-                CAST(idUsuario AS STRING) LIKE '%$search%' 
-                OR CAST(idCompra AS STRING) LIKE '%$search%'
+                CAST(c.idUsuario AS STRING) LIKE '%$search%' 
+                OR CAST(c.idCompra AS STRING) LIKE '%$search%'
             )";
         }
 
         if (!empty($filtros['fechaInicio'])) {
-            $conditions[] = "fechaInicioSuscripcion >= '{$filtros['fechaInicio']} 00:00:00'";
+            $conditions[] = "c.fechaInicioSuscripcion >= '{$filtros['fechaInicio']} 00:00:00'";
         }
 
         if (!empty($filtros['fechaFin'])) {
-            $conditions[] = "fechaInicioSuscripcion <= '{$filtros['fechaFin']} 23:59:59'";
+            $conditions[] = "c.fechaInicioSuscripcion <= '{$filtros['fechaFin']} 23:59:59'";
         }
 
         return count($conditions)
