@@ -73,6 +73,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/compras/data', [ComprasController::class, 'data'])
         ->name('compras.data');
 
+    Route::get('/compras/exportar', [ComprasController::class, 'exportarCSV'])
+        ->name('compras.exportar');
+
     Route::prefix('ciudades')->middleware('auth')->group(function () {
         Route::get('/', [CiudadesNormalizacionController::class, 'index']);
 

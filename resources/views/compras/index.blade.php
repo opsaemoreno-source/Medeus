@@ -103,6 +103,9 @@
                     <button type="button" id="limpiarFiltros" class="btn btn-outline-secondary">
                         Limpiar
                     </button>
+                    <button type="button" id="exportarCSV" class="btn btn-success">
+                        <i class="fas fa-download"></i> Exportar CSV
+                    </button>
                 </div>
 
             </form>
@@ -213,6 +216,8 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('estadoHiddenInputs').innerHTML = '';
     });
 
+    document.getElementById('exportarCSV').addEventListener('click', exportarCSV);
+
     cargarCompras();
 });
 
@@ -320,6 +325,12 @@ function renderTabla(data) {
     language: { url: 'https://cdn.datatables.net/plug-ins/2.0.7/i18n/es-MX.json' },
 });
 
+}
+
+function exportarCSV() {
+    const params = new URLSearchParams(new FormData(document.getElementById('filtrosCompras')));
+
+    window.location.href = `{{ route('compras.exportar') }}?${params}`;
 }
 </script>
 @endsection
