@@ -39,13 +39,22 @@ class BigQueryService
     {
         $query = "
             SELECT
-                id,
-                titulo,
-                fechaCreacion,
-                fechaPublicacion,
-                noCampos,
-                noRespuestas
-            FROM $this->tablaEncuestas
+                e.id,
+                e.titulo,
+                e.fechaCreacion,
+                e.fechaPublicacion,
+                e.noCampos,
+                COUNT(DISTINCT d.token) as noRespuestas
+            FROM $this->tablaEncuestas e
+            LEFT JOIN $this->tablaEncuestasDetalle d
+            ON d.idEncuesta = e.id
+            GROUP BY
+                e.id,
+                e.titulo,
+                e.fechaCreacion,
+                e.fechaPublicacion,
+                e.noCampos
+            ORDER BY e.fechaCreacion DESC
         ";
 
         $queryJob = $this->bigQuery->query($query);

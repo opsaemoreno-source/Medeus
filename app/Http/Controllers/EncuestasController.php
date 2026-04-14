@@ -33,4 +33,23 @@ class EncuestasController extends Controller
         }
     }
 
+    public function actualizar(Request $request)
+    {
+        $id = $request->input('id');
+
+        try {
+            app(\App\Services\EncuestaProcessorService::class)
+                ->actualizarEncuesta($id);
+
+            return back()->with('success', 
+                "Encuesta $id actualizada correctamente."
+            );
+
+        } catch (\Exception $e) {
+            return back()->with('error', 
+                'Error: '.$e->getMessage()
+            );
+        }
+    }
+
 }

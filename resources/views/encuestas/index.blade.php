@@ -35,6 +35,7 @@
                         <th>Fecha Publicación</th>
                         <th>N° Campos</th>
                         <th>N° Respuestas</th>
+                        <th>Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -46,6 +47,15 @@
                             <td>{{ is_object($e['fechaPublicacion']) ? optional($e['fechaPublicacion'])->format('Y-m-d H:i:s') : $e['fechaPublicacion'] }}</td>
                             <td>{{ $e['noCampos'] }}</td>
                             <td>{{ $e['noRespuestas'] }}</td>
+                            <td>
+                                <form method="POST" action="{{ route('encuestas.actualizar') }}">
+                                    @csrf
+                                    <input type="hidden" name="id" value="{{ $e['id'] }}">
+                                    <button class="btn btn-sm btn-warning">
+                                        Actualizar Datos
+                                    </button>
+                                </form>
+                            </td>
                         </tr>
                     @empty
                         <tr>

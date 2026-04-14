@@ -263,4 +263,137 @@ class EncuestaProcessorService
                 return ['', ''];
         }
     }
+
+    public function actualizarEncuesta(string $formId)
+    {
+        $projectId = 'admanagerapiaccess-382213';
+        $datasetId = "UsuariosOPSA";
+        $tableDetalle = "EncuestasTypeformDetalle";
+        $tableBase = "EncuestasTypeform";
+
+        $bigQuery = new BigQueryClient([
+            'projectId'  => $projectId,
+            'keyFilePath'=> storage_path('app/google/bigquery.json')
+        ]);
+
+        $accessToken = env('TYPEFORM_TOKEN');
+
+        if (!$accessToken) {
+            throw new Exception("TYPEFORM_TOKEN no configurado");
+        }
+
+        /*
+        =============================
+        Obtener última fecha guardada
+        =============================
+        */
+
+        $query = "
+            SELECT MAX(fechaFin) as ultima
+            FROM `$projectId.$datasetId.$tableDetalle`
+            WHERE idEncuesta = @id
+        ";
+
+        $jobConfig = $bigQuery->query($query)->parameters([
+            'id' => $formId
+        ]);
+
+        $results = $bigQuery->runQuery($jobConfig);
+
+        $ultimaFecha = null;
+
+        foreach ($results as $row) {
+            $ultimaFecha = $row['ultima'] ?? null;
+        }
+
+        if (!$ultimaFecha) {
+            throw new Exception("No existe información previa de la encuesta");
+        }
+
+        /*
+        =============================
+        Llamar API Typeform
+        =============================
+        */
+
+        $apiUrl = "https://api.typeform.com/forms/{$formId}/responses";
+
+        if ($ultimaFecha instanceof \DateTime) {
+            $since = $ultimaFecha->format('Y-m-d\TH:i:s\Z');
+        } else {
+            $since = (new DateTime($ultimaFecha))->format('Y-m-d\TH:i:s\Z');
+        }
+
+        $resp = Http::withToken($accessToken)->get($apiUrl, [
+            'since' => $since
+        ]);
+
+        if (!$resp->successful()) {
+            throw new Exception("Error Typeform: ".$resp->body());
+        }
+
+        $data = $resp->json();
+
+        if (empty($data['items'])) {
+            return true; // no hay nuevas respuestas
+        }
+
+        /*
+        =============================
+        Obtener preguntas
+        =============================
+        */
+
+        $formResp = Http::withToken($accessToken)
+            ->get("https://api.typeform.com/forms/{$formId}");
+
+        $formData = $formResp->json();
+
+        $mapaPreguntas = [];
+
+        foreach ($formData['fields'] as $field) {
+            $mapaPreguntas[] = [
+                'id' => $field['id'],
+                'texto' => $field['title']
+            ];
+        }
+
+        /*
+        =============================
+        Formatear respuestas
+        =============================
+        */
+
+        $respuestas = $this->formatearRespuestas(
+            $data['items'],
+            $formId,
+            $mapaPreguntas
+        );
+
+        $rowsToInsert = [];
+
+        foreach ($respuestas as $row) {
+            $rowsToInsert[] = ['data' => $row];
+        }
+
+        /*
+        =============================
+        Insertar BigQuery
+        =============================
+        */
+
+        $table = $bigQuery
+            ->dataset($datasetId)
+            ->table($tableDetalle);
+
+        foreach (array_chunk($rowsToInsert, 500) as $chunk) {
+            $insert = $table->insertRows($chunk);
+
+            if (!$insert->isSuccessful()) {
+                throw new Exception("Error insertando respuestas");
+            }
+        }
+
+        return true;
+    }
 }
