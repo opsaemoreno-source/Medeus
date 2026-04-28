@@ -53,6 +53,7 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/encuestas', [EncuestasController::class, 'index'])->name('encuestas.index');
     Route::post('/encuestas/procesar', [EncuestasController::class, 'procesar'])->name('encuestas.procesar');
     Route::post('/encuestas/actualizar', [EncuestasController::class, 'actualizar'])->name('encuestas.actualizar');
+    Route::post('/encuestas/sync-auto-update', [EncuestasController::class, 'syncAutoUpdate']);
 
     Route::get('/estadisticas', function () {
         return view('estadisticas.index');

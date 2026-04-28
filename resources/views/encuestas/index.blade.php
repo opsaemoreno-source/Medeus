@@ -21,6 +21,13 @@
         >
             Procesar encuesta
         </button>
+
+        <button
+            class="btn btn-success"
+            id="btnActualizarAuto"
+        >
+            Actualizar configuración
+        </button>
     </div>
 
     {{-- Tabla de encuestas (sin columna "Acciones") --}}
@@ -55,6 +62,23 @@
                                         Actualizar Datos
                                     </button>
                                 </form>
+                                @php
+                                    $auto = $e['autoUpdate'];
+
+                                    $checked = $auto === true
+                                        || $auto === 1
+                                        || $auto === '1'
+                                        || $auto === 'true'
+                                        || $auto === 'TRUE';
+                                @endphp
+                                <div class="form-check form-switch">
+                                    <input
+                                        class="form-check-input auto-update-toggle"
+                                        type="checkbox"
+                                        data-id="{{ $e['id'] }}"
+                                        {{ !empty($e['autoUpdate']) ? 'checked' : '' }}
+                                    >
+                                </div>
                             </td>
                         </tr>
                     @empty
@@ -127,32 +151,89 @@
 </style>
 
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    var modalEl = document.getElementById('procesarModal');
-    var idManual = document.getElementById('idManual');
-    var idHidden = document.getElementById('idEncuestaInput');
-    var alertEl = document.getElementById('procesarModalAlert');
-    var overlay = document.getElementById('loadingOverlay');
+    let initialState = {};
+    function hasChanges() {
+        return Array.from(document.querySelectorAll('.auto-update-toggle')).some(el => {
+            return el.checked !== initialState[el.dataset.id];
+        });
+    }
+    setInterval(() => {
+        document.getElementById('btnActualizarAuto').disabled = !hasChanges();
+    }, 300);
+    document.addEventListener('DOMContentLoaded', function () {
+        document.querySelectorAll('.auto-update-toggle').forEach(function (el) {
+            initialState[el.dataset.id] = el.checked;
+        });
+        var modalEl = document.getElementById('procesarModal');
+        var idManual = document.getElementById('idManual');
+        var idHidden = document.getElementById('idEncuestaInput');
+        var alertEl = document.getElementById('procesarModalAlert');
+        var overlay = document.getElementById('loadingOverlay');
 
-    // Antes de enviar el formulario, copia el valor del input visible al hidden
-    document.querySelector('#procesarModal form').addEventListener('submit', function (e) {
-        var val = idManual.value.trim();
-        if (!val) {
-            e.preventDefault();
-            alertEl.classList.remove('d-none');
-            return;
-        }
-        idHidden.value = val;
-        alertEl.classList.add('d-none');
-        overlay.style.display = 'flex';
-    });
+        // Antes de enviar el formulario, copia el valor del input visible al hidden
+        document.querySelector('#procesarModal form').addEventListener('submit', function (e) {
+            var val = idManual.value.trim();
+            if (!val) {
+                e.preventDefault();
+                alertEl.classList.remove('d-none');
+                return;
+            }
+            idHidden.value = val;
+            alertEl.classList.add('d-none');
+            overlay.style.display = 'flex';
+        });
 
-    // Cuando se abra el modal, limpiar campos
-    modalEl.addEventListener('show.bs.modal', function () {
-        idManual.value = '';
-        idHidden.value = '';
-        alertEl.classList.add('d-none');
+        // Cuando se abra el modal, limpiar campos
+        modalEl.addEventListener('show.bs.modal', function () {
+            idManual.value = '';
+            idHidden.value = '';
+            alertEl.classList.add('d-none');
+        });
+
+        document.getElementById('btnActualizarAuto').addEventListener('click', function () {
+
+            let changes = [];
+
+            document.querySelectorAll('.auto-update-toggle').forEach(function (el) {
+                let id = el.dataset.id;
+                let current = el.checked;
+                let original = initialState[id];
+
+                // SOLO si cambió
+                if (current !== original) {
+                    changes.push({
+                        id: id,
+                        autoUpdate: current ? 1 : 0
+                    });
+                }
+            });
+
+            if (changes.length === 0) {
+                alert('No hay cambios para actualizar');
+                return;
+            }
+
+            fetch('/encuestas/sync-auto-update', {
+                method: 'POST',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ items: changes })
+            })
+            .then(res => res.json())
+            .then(res => {
+                alert('Cambios actualizados correctamente');
+
+                // actualizar estado base
+                changes.forEach(c => {
+                    initialState[c.id] = c.autoUpdate === 1;
+                });
+            })
+            .catch(() => {
+                alert('Error al actualizar');
+            });
+        });
     });
-});
 </script>
 @endsection

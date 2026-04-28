@@ -52,4 +52,30 @@ class EncuestasController extends Controller
         }
     }
 
+    public function syncAutoUpdate(Request $request)
+    {
+        $items = $request->input('items', []);
+
+        try {
+            $service = app(\App\Services\BigQueryService::class);
+
+            foreach ($items as $item) {
+                $service->actualizarAutoUpdate(
+                    $item['id'],
+                    (bool) $item['autoUpdate']
+                );
+            }
+
+            return response()->json([
+                'success' => true
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage()
+            ], 500);
+        }
+    }
+
 }

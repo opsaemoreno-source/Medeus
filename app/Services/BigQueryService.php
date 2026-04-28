@@ -44,7 +44,8 @@ class BigQueryService
                 e.fechaCreacion,
                 e.fechaPublicacion,
                 e.noCampos,
-                COUNT(DISTINCT d.token) as noRespuestas
+                COUNT(DISTINCT d.token) as noRespuestas,
+                CAST(autoUpdate AS BOOL) AS autoUpdate
             FROM $this->tablaEncuestas e
             LEFT JOIN $this->tablaEncuestasDetalle d
             ON d.idEncuesta = e.id
@@ -53,7 +54,8 @@ class BigQueryService
                 e.titulo,
                 e.fechaCreacion,
                 e.fechaPublicacion,
-                e.noCampos
+                e.noCampos,
+                e.autoUpdate
             ORDER BY e.fechaCreacion DESC
         ";
 
@@ -407,6 +409,26 @@ class BigQueryService
         ";
         $results = $this->bigQuery->runQuery($this->bigQuery->query($sql));
         return iterator_to_array($results->rows());
+    }
+
+    public function actualizarAutoUpdate($id, $value)
+    {
+        $projectId = 'admanagerapiaccess-382213';
+        $datasetId = "UsuariosOPSA";
+        $tableId   = "EncuestasTypeform";
+
+        $query = "
+            UPDATE `$projectId.$datasetId.$tableId`
+            SET autoUpdate = @value
+            WHERE id = @id
+        ";
+
+        $jobConfig = $this->bigQuery->query($query)->parameters([
+            'id' => $id,
+            'value' => $value
+        ]);
+
+        $this->bigQuery->runQuery($jobConfig);
     }
 
 }
