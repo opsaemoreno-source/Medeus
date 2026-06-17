@@ -102,5 +102,4 @@
     </div>
 
 </div>
-@dd($topics->pluck('active', 'id'));
 @endsection

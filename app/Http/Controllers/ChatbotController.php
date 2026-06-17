@@ -213,23 +213,25 @@ class ChatbotController extends Controller
     public function deactivate(ChatbotTopic $topic)
     {
         $topic->update([
-            'active' => false
+            'active' => false,
+            'sync_status' => 'disabled'
         ]);
 
         app(ChatbotSyncService::class)->deactivate($topic);
 
-        return back()
-            ->with('success', 'Tema desactivado.');
+        return back();
     }
 
     public function activate(ChatbotTopic $topic)
     {
-        $topic->update(['active' => true]);
-        $topic->refresh();
+        $topic->update([
+            'active' => true,
+            'sync_status' => 'synced'
+        ]);
 
         app(ChatbotSyncService::class)->sync($topic);
 
-        return back()->with('success', 'Tema activado.');
+        return back();
     }
 
     public function versions(ChatbotTopic $topic)
