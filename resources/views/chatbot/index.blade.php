@@ -37,14 +37,10 @@
                             <td>{{ $topic->slug }}</td>
 
                             <td>
-                                @if($topic->sync_status == 'synced')
-                                    <span class="badge bg-success">Sincronizado</span>
-                                @elseif($topic->sync_status == 'error')
-                                    <span class="badge bg-danger">Error</span>
-                                @elseif($topic->sync_status == 'disabled')
-                                    <span class="badge bg-secondary">Desactivado</span>
+                                @if($topic->active)
+                                    <span class="badge bg-success">Activo</span>
                                 @else
-                                    <span class="badge bg-warning">Pendiente</span>
+                                    <span class="badge bg-secondary">Inactivo</span>
                                 @endif
                             </td>
 
@@ -67,20 +63,13 @@
                                     <button class="btn btn-sm btn-info">Duplicar</button>
                                 </form>
 
-                                @if($topic->sync_status == 'synced')
-                                    <form
-                                        method="POST"
-                                        action="{{ route('chatbot.deactivate', $topic) }}"
-                                        style="display:inline;">
+                                @if($topic->active)
+                                    <form method="POST" action="{{ route('chatbot.deactivate', $topic) }}">
                                         @csrf
                                         <button class="btn btn-sm btn-warning">Desactivar</button>
                                     </form>
-
                                 @else
-                                    <form
-                                        method="POST"
-                                        action="{{ route('chatbot.activate', $topic) }}"
-                                        style="display:inline;">
+                                    <form method="POST" action="{{ route('chatbot.activate', $topic) }}">
                                         @csrf
                                         <button class="btn btn-sm btn-success">Activar</button>
                                     </form>
