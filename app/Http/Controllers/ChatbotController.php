@@ -222,14 +222,11 @@ class ChatbotController extends Controller
 
     public function activate(ChatbotTopic $topic)
     {
-        $topic->update([
-            'active' => true
-        ]);
+        $topic->update(['active' => true]);
 
-        app(ChatbotSyncService::class)->activate($topic);
+        app(ChatbotSyncService::class)->sync($topic);
 
-        return back()
-            ->with('success', 'Tema activado.');
+        return back()->with('success', 'Tema activado.');
     }
 
     public function versions(ChatbotTopic $topic)
