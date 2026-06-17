@@ -54,8 +54,6 @@
                 </div>
             </a>
         </div>
-
-        @if(Auth::user() && Auth::user()->is_admin == 1)
         <div class="col-md-4">
             <a href="{{ route('chatbot.index') }}" class="text-decoration-none">
                 <div class="card text-white shadow-sm h-100"
@@ -69,7 +67,8 @@
                 </div>
             </a>
         </div>
-        
+
+        @if(Auth::user() && Auth::user()->is_admin == 1)        
         <!-- Tarjeta: Usuarios -->
         <div class="col-md-4">
             <a href="{{ route('users.index') }}" class="text-decoration-none">
