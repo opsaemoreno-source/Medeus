@@ -226,6 +226,8 @@ class ChatbotController extends Controller
             'active' => true
         ]);
 
+        app(ChatbotSyncService::class)->sync($topic);
+
         return back()
             ->with('success', 'Tema activado.');
     }

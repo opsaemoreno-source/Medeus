@@ -26,15 +26,17 @@ class ChatbotSyncService
                     'validation_prompt' => $topic->validation_prompt,
                 ]);
 
-            $data = $response->json();
+            $data = $response->json() ?? [];
+
+            if (!is_array($data)) {
+                $data = [];
+            }
+
+            $success = $response->successful() && ($data['success'] ?? false);
 
             $topic->update([
-                'sync_status' => ($response->successful() && ($data['success'] ?? false))
-                    ? 'synced'
-                    : 'error',
-
-                'sync_error' => $data['success'] ? null : json_encode($data),
-
+                'sync_status' => $success ? 'synced' : 'error',
+                'sync_error' => $success ? null : json_encode($data),
                 'synced_at' => Carbon::now(),
             ]);
 
@@ -71,11 +73,13 @@ class ChatbotSyncService
                     . $topic->slug
                 );
 
-            $data = $response->json();
+            $data = $response->json() ?? [];
+
+            $success = $response->successful() && ($data['success'] ?? false);
 
             $topic->update([
-                'sync_status' => 'disabled',
-                'sync_error' => null,
+                'sync_status' => $success ? 'disabled' : 'error',
+                'sync_error' => $success ? null : json_encode($data),
                 'synced_at' => Carbon::now(),
             ]);
 
