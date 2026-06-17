@@ -60,13 +60,11 @@ class ChatbotSyncService
         }
     }
 
-    public function activate(ChatbotTopic $topic)
+    public function activate(ChatbotTopic $topic): array
     {
         $topic->update(['active' => true]);
 
-        app(ChatbotSyncService::class)->sync($topic);
-
-        return back()->with('success', 'Tema activado.');
+        return $this->sync($topic);
     }
 
     public function deactivate(ChatbotTopic $topic): array
