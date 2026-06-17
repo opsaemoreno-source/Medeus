@@ -12,11 +12,6 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('chatbot_topics', function (Blueprint $table) {
-
-            $table->text('sync_error')
-                ->nullable()
-                ->after('sync_status');
-
             $table->timestamp('last_synced_at')
                 ->nullable()
                 ->after('sync_error');
