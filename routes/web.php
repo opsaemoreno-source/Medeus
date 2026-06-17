@@ -7,6 +7,7 @@ use App\Http\Controllers\SuscriptoresController;
 use App\Http\Controllers\EstadisticasController;
 use App\Http\Controllers\ComprasController;
 use App\Http\Controllers\CiudadesNormalizacionController;
+use App\Http\Controllers\ChatbotController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
@@ -91,6 +92,30 @@ Route::middleware(['auth'])->group(function () {
         Route::delete('/alias/{alias}', [CiudadesNormalizacionController::class, 'destroy']);
     });
 
+    Route::prefix('chatbot')
+        ->name('chatbot.')
+        ->group(function () {
+            Route::get('/', [ChatbotController::class, 'index'])
+                ->name('index');
+            Route::get('/create', [ChatbotController::class, 'create'])
+                ->name('create');
+            Route::post('/', [ChatbotController::class, 'store'])
+                ->name('store');
+            Route::get('/{topic}/edit', [ChatbotController::class, 'edit'])
+                ->name('edit');
+            Route::put('/{topic}', [ChatbotController::class, 'update'])
+                ->name('update');
+            Route::post('/{topic}/duplicate', [ChatbotController::class, 'duplicate'])
+                ->name('duplicate');
+            Route::post('/{topic}/activate', [ChatbotController::class, 'activate'])
+                ->name('activate');
+            Route::post('/{topic}/deactivate', [ChatbotController::class, 'deactivate'])
+                ->name('deactivate');
+            Route::get('/{topic}/versions', [ChatbotController::class, 'versions'])
+                ->name('versions');
+            Route::post('/{topic}/versions/{version}/restore',[ChatbotController::class, 'restoreVersion'])
+                ->name('restore-version');
+    });
 });
 
 require __DIR__.'/auth.php';
