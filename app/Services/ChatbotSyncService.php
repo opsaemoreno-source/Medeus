@@ -64,7 +64,7 @@ class ChatbotSyncService
     {
         $topic->update(['active' => true]);
 
-        return $this->sync($topic);
+        return app(ChatbotSyncService::class)->sync($topic);
     }
 
     public function deactivate(ChatbotTopic $topic): array
