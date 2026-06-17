@@ -14,7 +14,7 @@ class ChatbotController extends Controller
     {
         $topics = ChatbotTopic::query()
             ->orderBy('name')
-            ->get(); // siempre fresh
+            ->get();
 
         return view('chatbot.index', compact('topics'));
     }
@@ -228,7 +228,7 @@ class ChatbotController extends Controller
         $topic->refresh();
 
         app(ChatbotSyncService::class)->sync($topic);
-        dd(ChatbotTopic::find($topic->id)->active);
+
         return back()->with('success', 'Tema activado.');
     }
 
