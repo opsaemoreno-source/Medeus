@@ -68,6 +68,21 @@
             </a>
         </div>
 
+        <!-- Tarjeta: Ciudades -->
+        <div class="col-md-4">
+            <a href="{{ route('cities.index') }}" class="text-decoration-none">
+                <div class="card text-white shadow-sm h-100"
+                    style="background-color: #5b8def; border-radius: 12px;">
+                    <div class="card-body d-flex flex-column justify-content-between p-4">
+                        <h3 class="fw-bold mb-2">Ciudades</h3>
+                        <p class="mb-0">
+                            Catálogo de equivalencia de ciudades y comunidades.
+                        </p>
+                    </div>
+                </div>
+            </a>
+        </div>
+
         @if(Auth::user() && Auth::user()->is_admin == 1)        
         <!-- Tarjeta: Usuarios -->
         <div class="col-md-4">

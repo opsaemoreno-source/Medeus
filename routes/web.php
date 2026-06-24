@@ -7,6 +7,7 @@ use App\Http\Controllers\SuscriptoresController;
 use App\Http\Controllers\EstadisticasController;
 use App\Http\Controllers\ComprasController;
 use App\Http\Controllers\CiudadesNormalizacionController;
+use App\Http\Controllers\CityAliasController;
 use App\Http\Controllers\ChatbotController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
@@ -79,17 +80,12 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/compras/exportar', [ComprasController::class, 'exportarCSV'])
         ->name('compras.exportar');
 
-    Route::prefix('ciudades')->middleware('auth')->group(function () {
-        Route::get('/', [CiudadesNormalizacionController::class, 'index']);
-
-        Route::get('/canonicas', [CiudadesNormalizacionController::class, 'canonicas']);
-        Route::post('/canonicas', [CiudadesNormalizacionController::class, 'storeCanonica']);
-        Route::put('/canonicas', [CiudadesNormalizacionController::class, 'updateCanonica']);
-
-        Route::get('/alias/{ciudadCanonica}', [CiudadesNormalizacionController::class, 'alias']);
-        Route::post('/alias', [CiudadesNormalizacionController::class, 'store']);
-        Route::put('/alias', [CiudadesNormalizacionController::class, 'update']);
-        Route::delete('/alias/{alias}', [CiudadesNormalizacionController::class, 'destroy']);
+    Route::prefix('cities')->name('cities.')->middleware('auth')->group(function () {
+        Route::get('/', [CityAliasController::class, 'index'])->name('index');
+        Route::post('/cities-alias', [CityAliasController::class, 'store']);
+        Route::put('/cities-alias/{alias}', [CityAliasController::class, 'update']);
+        Route::get('/cities-canonicas', [CityAliasController::class, 'canonicasSearch']);
+        Route::get('/cities-alias/check-duplicate', [CityAliasController::class, 'checkDuplicate']);
     });
 
     Route::prefix('chatbot')

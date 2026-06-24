@@ -35,6 +35,11 @@ class BigQueryService
         $this->vtaCiudadesNormalizadas = "`admanagerapiaccess-382213.UsuariosOPSA.vta_ciudadesNormalizadas`";
     }
 
+    public function client(): BigQueryClient
+    {
+        return $this->bigQuery;
+    }
+
     public function obtenerEncuestas()
     {
         $query = "
