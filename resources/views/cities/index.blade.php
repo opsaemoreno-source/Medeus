@@ -21,7 +21,7 @@ $totalPages = ceil($total / 25);
                    id="filterCanonica"
                    class="form-control form-control-sm"
                    value="{{ request('canonica') }}"
-                   placeholder="Filtrar por ciudad canónica">
+                   placeholder="Filtrar por ciudad normalizada">
         </div>
 
         <div class="col-md-3">
@@ -44,13 +44,13 @@ $totalPages = ceil($total / 25);
     <div class="card shadow-sm">
 
         <div class="card-header">
-            <strong>Alias de ciudades</strong>
+            <strong>Equivalencias de ciudades</strong>
         </div>
 
         <div class="card mb-4">
 
             <div class="card-header">
-                Nuevo alias
+                Nueva equivalencia
             </div>
 
             <div class="card-body">
@@ -61,8 +61,8 @@ $totalPages = ceil($total / 25);
                             {{-- ================= FILA NUEVA ================= --}}
                             <thead class="table-dark">
                                 <tr>
-                                    <th>Alias</th>
-                                    <th>Ciudad canónica</th>
+                                    <th>Ingresado por usuario</th>
+                                    <th>Normalizado</th>
                                     <th>País</th>
                                     <th>Estado</th>
                                     <th style="width:120px;">Acción</th>
@@ -112,8 +112,8 @@ $totalPages = ceil($total / 25);
 
                     <thead class="table-dark">
                         <tr>
-                            <th>Alias</th>
-                            <th>Ciudad canónica</th>
+                            <th>Ingresado por usuario</th>
+                            <th>Normalizado</th>
                             <th>País</th>
                             <th>Estado</th>
                             <th style="width:120px;">Acción</th>
