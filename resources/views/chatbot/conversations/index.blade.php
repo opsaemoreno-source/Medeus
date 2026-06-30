@@ -83,7 +83,7 @@ use Illuminate\Support\Str;
                         <td>
                             @if($first)
                                 <span title="{{ $first }}">
-                                    {{ $first->diffForHumans() }}
+                                    {{ \Carbon\Carbon::parse($first)->diffForHumans() }}
                                 </span>
                             @endif
                         </td>
@@ -91,7 +91,7 @@ use Illuminate\Support\Str;
                         <td>
                             @if($last)
                                 <span title="{{ $last }}">
-                                    {{ $last->diffForHumans() }}
+                                    {{ \Carbon\Carbon::parse($last)->diffForHumans() }}
                                 </span>
                             @endif
                         </td>
