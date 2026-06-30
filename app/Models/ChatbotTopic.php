@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\ChatbotConversation;
 use App\Models\ChatbotTopicVersion;
 
 /**
@@ -64,6 +65,14 @@ class ChatbotTopic extends Model
     {
         return $this->hasMany(
             ChatbotTopicVersion::class
+        );
+    }
+
+    public function conversations()
+    {
+        return $this->hasMany(
+            ChatbotConversation::class,
+            'topic_id'
         );
     }
 }

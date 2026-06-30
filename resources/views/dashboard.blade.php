@@ -68,6 +68,23 @@
             </a>
         </div>
 
+        <!--<div class="col-md-4">
+            <a href="{{ route('chatbot.conversations.index') }}"
+            class="text-decoration-none">
+                <div class="card shadow-sm border-0 h-100 dashboard-card bg-primary text-white">
+                    <div class="card-body">
+                        <h4>
+                            <i class="bi bi-chat-dots"></i>
+                            Conversaciones
+                        </h4>
+                        <p class="mb-0">
+                            Historial de conversaciones del chatbot.
+                        </p>
+                    </div>
+                </div>
+            </a>
+        </div>-->
+
         <!-- Tarjeta: Ciudades -->
         <div class="col-md-4">
             <a href="{{ route('cities.index') }}" class="text-decoration-none">

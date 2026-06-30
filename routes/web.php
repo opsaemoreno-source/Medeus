@@ -9,6 +9,7 @@ use App\Http\Controllers\ComprasController;
 use App\Http\Controllers\CiudadesNormalizacionController;
 use App\Http\Controllers\CityAliasController;
 use App\Http\Controllers\ChatbotController;
+use App\Http\Controllers\ChatbotConversationController;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Auth;
 
@@ -111,6 +112,10 @@ Route::middleware(['auth'])->group(function () {
                 ->name('versions');
             Route::post('/{topic}/versions/{version}/restore',[ChatbotController::class, 'restoreVersion'])
                 ->name('restore-version');
+            Route::get('/conversations', [ChatbotConversationController::class, 'index'])
+                ->name('conversations.index');
+            Route::get('/conversations/{conversation}', [ChatbotConversationController::class, 'show'])
+                ->name('conversations.show');
     });
 });
 
