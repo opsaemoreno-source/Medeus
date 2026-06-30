@@ -32,4 +32,14 @@ class ChatbotMessage extends Model
             'conversation_id'
         );
     }
+
+    public function aiLogs()
+    {
+        return $this->hasMany(ChatbotAiLog::class);
+    }
+
+    public function queryResult()
+    {
+        return $this->hasOne(ChatbotQueryResult::class);
+    }
 }

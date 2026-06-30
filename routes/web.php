@@ -6,7 +6,7 @@ use App\Http\Controllers\EncuestasController;
 use App\Http\Controllers\SuscriptoresController;
 use App\Http\Controllers\EstadisticasController;
 use App\Http\Controllers\ComprasController;
-use App\Http\Controllers\CiudadesNormalizacionController;
+use App\Http\Controllers\ChatbotExecutionController;
 use App\Http\Controllers\CityAliasController;
 use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\ChatbotConversationController;
@@ -116,6 +116,8 @@ Route::middleware(['auth'])->group(function () {
                 ->name('conversations.index');
             Route::get('/conversations/{conversation}', [ChatbotConversationController::class, 'show'])
                 ->name('conversations.show');
+            Route::get('/conversations/{conversation}/execution', [ChatbotExecutionController::class, 'show'])
+                ->name('conversations.execution');
     });
 });
 
