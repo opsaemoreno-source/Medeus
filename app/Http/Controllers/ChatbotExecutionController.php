@@ -2,32 +2,24 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ChatbotConversation;
 use App\Models\ChatbotAiLog;
-use App\Models\ChatbotQueryResult;
 use Illuminate\Http\Request;
 
 class ChatbotExecutionController extends Controller
 {
-    public function show(ChatbotConversation $conversation)
+    public function show($conversationId)
     {
-        $logsByMessage = ChatbotAiLog::query()
-            ->where('conversation_id', $conversation->id)
+        $logs = ChatbotAiLog::query()
+            ->where('conversation_id', $conversationId)
             ->orderBy('created_at')
             ->get()
             ->groupBy(function ($log) {
-                return $log->message_id ?? 'null';
+               return $log->message_id ?? $log->id;
             });
 
-        $queryResults = ChatbotQueryResult::query()
-            ->where('conversation_id', $conversation->id)
-            ->get()
-            ->keyBy('message_id');
-
         return view('chatbot.execution.show', [
-            'conversation' => $conversation,
-            'logsByMessage' => $logsByMessage,
-            'queryResults' => $queryResults,
+            'conversationId' => $conversationId,
+            'logsByMessage' => $logs
         ]);
     }
 }
