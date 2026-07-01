@@ -12,25 +12,20 @@ class ChatbotExecutionController extends Controller
     public function show(ChatbotConversation $conversation)
     {
         $logs = ChatbotAiLog::query()
-            ->with([
-                'message:id,conversation_id,role,content,created_at'
-            ])
             ->where('conversation_id', $conversation->id)
             ->orderBy('created_at')
-            ->get();
+            ->get()
+            ->groupBy('message_id');
 
         $queryResults = ChatbotQueryResult::query()
             ->where('conversation_id', $conversation->id)
             ->get()
             ->keyBy('message_id');
 
-        return view(
-            'chatbot.execution.show',
-            [
-                'conversation' => $conversation,
-                'logs' => $logs,
-                'queryResults' => $queryResults,
-            ]
-        );
+        return view('chatbot.execution.show', [
+            'conversation' => $conversation,
+            'logsByMessage' => $logs,
+            'queryResults' => $queryResults,
+        ]);
     }
 }
