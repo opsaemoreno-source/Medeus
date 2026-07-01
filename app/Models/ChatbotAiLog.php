@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ChatbotAiLog extends Model
 {
+    protected $table = 'chatbot_ai_logs';
+
     protected $fillable = [
         'conversation_id',
         'message_id',
@@ -20,13 +23,19 @@ class ChatbotAiLog extends Model
         'success' => 'boolean',
     ];
 
-    public function conversation()
+    public function conversation(): BelongsTo
     {
-        return $this->belongsTo(ChatbotConversation::class);
+        return $this->belongsTo(
+            ChatbotConversation::class,
+            'conversation_id'
+        );
     }
 
-    public function message()
+    public function message(): BelongsTo
     {
-        return $this->belongsTo(ChatbotMessage::class,'message_id');
+        return $this->belongsTo(
+            ChatbotMessage::class,
+            'message_id'
+        );
     }
 }

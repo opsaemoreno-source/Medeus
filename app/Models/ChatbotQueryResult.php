@@ -3,9 +3,12 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ChatbotQueryResult extends Model
 {
+    protected $table = 'chatbot_query_results';
+
     protected $fillable = [
         'conversation_id',
         'message_id',
@@ -13,13 +16,19 @@ class ChatbotQueryResult extends Model
         'result_json',
     ];
 
-    public function conversation()
+    public function conversation(): BelongsTo
     {
-        return $this->belongsTo(ChatbotConversation::class);
+        return $this->belongsTo(
+            ChatbotConversation::class,
+            'conversation_id'
+        );
     }
 
-    public function message()
+    public function message(): BelongsTo
     {
-        return $this->belongsTo(ChatbotMessage::class,'message_id');
+        return $this->belongsTo(
+            ChatbotMessage::class,
+            'message_id'
+        );
     }
 }

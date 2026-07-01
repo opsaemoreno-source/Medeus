@@ -11,11 +11,11 @@
         Topic: {{ $conversation->topic->name ?? 'Sin topic' }}
     </p>
 
-    @foreach($conversation->messages as $message)
+    @foreach($logs as $log)
         <div class="card mb-4">
             <div class="card-header d-flex justify-content-between">
                 <strong>
-                    Mensaje #{{ $message->id }}
+                    Mensaje #{{ $log->message->id }}
                 </strong>
 
                 <span class="badge bg-secondary">
