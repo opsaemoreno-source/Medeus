@@ -58,4 +58,21 @@ class ChatbotConversationController extends Controller
             compact('conversation')
         );
     }
+
+    public function execution(ChatbotConversation $conversation)
+    {
+        $conversation->load([
+            'topic:id,name',
+            'messages' => function ($q) {
+                $q->orderBy('created_at', 'asc');
+            },
+            'messages.aiLogs',
+            'messages.queryResult',
+        ]);
+
+        return view(
+            'chatbot.conversations.execution',
+            compact('conversation')
+        );
+    }
 }
