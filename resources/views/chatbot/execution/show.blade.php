@@ -28,9 +28,9 @@
                         <hr>
 
                         <h6>Prompt</h6>
-                        <pre>{{ $log->prompt }}</pre>
+                        <pre class="bg-light p-2">{!! $log->prompt !!}</pre>
                         <h6>Response</h6>
-                        <pre>{{ $log->response }}</pre>
+                        <pre class="bg-light p-2">{!! $log->response !!}</pre>
                         @if($log->error_type)
                             <div class="alert alert-danger mt-2">
                                 {{ $log->error_type }}
@@ -42,9 +42,9 @@
                 @if($result)
                     <hr>
                     <h6>SQL</h6>
-                    <pre>{{ $result->sql_query }}</pre>
+                    <pre class="bg-dark text-white p-2">{!! $result->sql_query ?? '' !!}</pre>
                     <h6>RESULT JSON</h6>
-                    <pre>{{ $result->result_json }}</pre>
+                    <pre class="bg-dark text-white p-2">{!! $result->result_json ?? '' !!}</pre>
                 @endif
             </div>
         </div>
