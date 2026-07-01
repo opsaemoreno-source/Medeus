@@ -20,6 +20,6 @@ class ChatbotQueryResult extends Model
 
     public function message()
     {
-        return $this->belongsTo(ChatbotMessage::class);
+        return $this->belongsTo(ChatbotMessage::class,'message_id');
     }
 }

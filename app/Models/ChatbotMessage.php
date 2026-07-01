@@ -35,11 +35,11 @@ class ChatbotMessage extends Model
 
     public function aiLogs()
     {
-        return $this->hasMany(ChatbotAiLog::class);
+        return $this->hasMany(ChatbotAiLog::class,'message_id');
     }
 
     public function queryResult()
     {
-        return $this->hasOne(ChatbotQueryResult::class);
+        return $this->hasOne(ChatbotQueryResult::class,'message_id');
     }
 }
