@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Models\ChatbotConversation;
 use App\Models\ChatbotTopic;
-use App\Models\ChatbotMessage;
 use Illuminate\Http\Request;
 
 class ChatbotConversationController extends Controller
