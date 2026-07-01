@@ -12,28 +12,15 @@ class ChatbotExecutionController extends Controller
         $conversation->load([
             'topic:id,name',
             'messages' => function ($q) {
-                $q->select(
-                    'id',
-                    'conversation_id',
-                    'role',
-                    'content',
-                    'created_at'
-                );
+                $q->orderBy('created_at');
             },
-            'messages.aiLogs' => function ($q) {
-                $q->select(
-                    'id',
-                    'message_id',
-                    'stage',
-                    'success',
-                    'error_type',
-                    'prompt',
-                    'response',
-                    'created_at'
-                );
-            },
-
-            'messages.queryResult'
+            'messages.aiLogs',
+            'messages.queryResult',
         ]);
+
+        return view(
+            'chatbot.conversations.execution',
+            compact('conversation')
+        );
     }
 }
