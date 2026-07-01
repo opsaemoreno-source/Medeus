@@ -11,11 +11,13 @@ class ChatbotExecutionController extends Controller
 {
     public function show(ChatbotConversation $conversation)
     {
-        $logs = ChatbotAiLog::query()
+        $logsByMessage = ChatbotAiLog::query()
             ->where('conversation_id', $conversation->id)
             ->orderBy('created_at')
             ->get()
-            ->groupBy('message_id');
+            ->groupBy(function ($log) {
+                return $log->message_id ?? 'null';
+            });
 
         $queryResults = ChatbotQueryResult::query()
             ->where('conversation_id', $conversation->id)
@@ -24,7 +26,7 @@ class ChatbotExecutionController extends Controller
 
         return view('chatbot.execution.show', [
             'conversation' => $conversation,
-            'logsByMessage' => $logs,
+            'logsByMessage' => $logsByMessage,
             'queryResults' => $queryResults,
         ]);
     }
