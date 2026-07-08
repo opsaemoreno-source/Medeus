@@ -115,18 +115,16 @@ class ChatbotController extends Controller
     {
         $request->validate([
             'name' => 'required|max:255',
-            'config_json' => 'required'
+            'config_token' => 'nullable|string|max:255',
+            'config_allowed_table' => 'nullable|string|max:255',
+            'config_out_of_scope_answer' => 'nullable|string',
         ]);
 
-        json_decode($request->config_json);
-
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            return back()
-                ->withInput()
-                ->withErrors([
-                    'config_json' => 'El JSON no es válido.'
-                ]);
-        }
+        $config = [
+            'token' => $request->config_token,
+            'allowed_table' => $request->config_allowed_table,
+            'out_of_scope_answer' => $request->config_out_of_scope_answer,
+        ];
 
         $slug = Str::slug($request->name);
 
@@ -143,10 +141,7 @@ class ChatbotController extends Controller
         }
 
         $newData = [
-            'config_json' => json_decode(
-                $request->config_json,
-                true
-            ),
+            'config_json' => $config,
 
             'analysis_prompt' => $request->analysis_prompt,
             'business_context' => $request->business_context,
@@ -173,10 +168,7 @@ class ChatbotController extends Controller
             'name' => $request->name,
             'slug' => $slug,
 
-            'config_json' => json_decode(
-                $request->config_json,
-                true
-            ),
+            'config_json' => $config,
 
             'analysis_prompt' => $request->analysis_prompt,
             'business_context' => $request->business_context,

@@ -99,10 +99,12 @@
                     name="config_out_of_scope_answer">{{ old('config_out_of_scope_answer', $topic->config_json['out_of_scope_answer'] ?? '') }}</textarea>
             </div>
 
-            @error('config_json')
-                <div class="text-danger mt-1">
-                    {{ $message }}
-                </div>
+            @error('config_allowed_table')
+            <div class="text-danger">{{ $message }}</div>
+            @enderror
+
+            @error('config_out_of_scope_answer')
+            <div class="text-danger">{{ $message }}</div>
             @enderror
         </div>
     </div>
