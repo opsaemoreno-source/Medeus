@@ -17,7 +17,7 @@
                 data-bs-target="#msg_{{ $messageId }}"
                 aria-expanded="false"
                 aria-controls="msg_{{ $messageId }}"
-                onclick="bootstrap.Collapse.getOrCreateInstance(document.getElementById('msg_{{ $messageId }}')).toggle()">
+                onclick="toggleCollapse('msg_{{ $messageId }}')">
                 Detalle
             </button>
         </div>
@@ -39,4 +39,13 @@
 @endsection
 @section('scripts')
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+    function toggleCollapse(id) {
+        const element = document.getElementById(id);
+        const instance = bootstrap.Collapse.getOrCreateInstance(element, {
+            toggle: false
+        });
+        instance.toggle();
+    }
+    </script>
 @endsection
