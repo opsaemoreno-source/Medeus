@@ -27,7 +27,7 @@
                         <strong>{{ $log->step_type }}</strong>
                         <hr>
                         <pre style="white-space: pre-wrap;">{{ $log->prompt }}</pre>
-                        <pre style="white-space: pre-wrap;">{!! nl2br($log->response) !!}</pre>
+                        <pre style="white-space: pre-wrap;">{!! $log->response !!}</pre>
                     </div>
                 @endforeach
             </div>
