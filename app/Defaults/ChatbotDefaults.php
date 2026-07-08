@@ -4,8 +4,8 @@ namespace App\Defaults;
 
 class ChatbotDefaults
 {
-    public const CHAT_URL = 'https://opsa-chatbot.go.com.hn/chat/';
-    
+    public const CHAT_URL = 'https://opsa-chatbot.go.com.hn/?domain=';
+
     public static function analysisPrompt(): string
     {
         return <<<'PROMPT'
