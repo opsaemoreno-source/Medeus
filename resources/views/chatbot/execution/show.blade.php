@@ -10,10 +10,15 @@
                 <strong>Message ID:</strong> {{ $messageId }}
                 <span class="text-muted">({{ $logs->count() }})</span>
             </div>
-            <button class="btn btn-sm btn-primary"
-                    data-bs-toggle="collapse"
-                    data-bs-target="#msg_{{ $messageId }}">
-                Toggle
+            <button
+                class="btn btn-sm btn-primary"
+                type="button"
+                data-bs-toggle="collapse"
+                data-bs-target="#msg_{{ $messageId }}"
+                aria-expanded="false"
+                aria-controls="msg_{{ $messageId }}"
+                onclick="bootstrap.Collapse.getOrCreateInstance(document.getElementById('msg_{{ $messageId }}')).toggle()">
+                Detalle
             </button>
         </div>
         <div id="msg_{{ $messageId }}" class="collapse">
