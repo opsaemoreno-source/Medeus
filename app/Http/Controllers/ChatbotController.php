@@ -14,6 +14,7 @@ class ChatbotController extends Controller
     public function index()
     {
         $topics = ChatbotTopic::query()
+            ->withCount('versions')
             ->orderBy('name')
             ->get();
 
