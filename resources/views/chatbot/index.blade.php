@@ -77,9 +77,8 @@
                                 <button
                                     type="button"
                                     class="btn btn-sm btn-outline-secondary copy-url"
-                                    data-url="{{ 'https://opsa-chatbot.go.com.hn/chat/' . $topic->slug }}"
-                                    title="Copiar URL">
-                                    <i class="bi bi-clipboard"></i>
+                                    data-url="{{ \App\Defaults\ChatbotDefaults::CHAT_URL . $topic->slug }}">
+                                    Copiar URL
                                 </button>
                             </td>
                         </tr>
