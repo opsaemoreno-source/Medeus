@@ -39,7 +39,7 @@
                     <div class="d-flex justify-content-start mb-3">
                         <div class="p-3 bg-light border rounded"
                              style="max-width: 75%;">
-                            {!! nl2br(e($message->content)) !!}
+                            {!! nl2br($message->content) !!}
                             {{-- STATUS BADGE --}}
                             <div class="mt-2">
                                 <span class="badge
