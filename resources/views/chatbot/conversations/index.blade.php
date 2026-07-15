@@ -100,7 +100,7 @@ use Illuminate\Support\Str;
                             <a href="{{ route('chatbot.conversations.show', $conversation->id) }}" class="btn btn-sm btn-primary">
                                 Ver conversación
                             </a>
-                            <a href="{{ route('chatbot.conversations.execution.show', $conversation->id) }}" class="btn btn-sm btn-dark">
+                            <a href="{{ route('chatbot.conversations.execution', $conversation->id) }}" class="btn btn-sm btn-dark">
                                 Ver ejecución IA
                             </a>
                         </td>
