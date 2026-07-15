@@ -117,7 +117,7 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/conversations/{conversation}', [ChatbotConversationController::class, 'show'])
                 ->name('conversations.show');
             Route::get('/conversations/{conversation}/execution', [ChatbotExecutionController::class, 'show'])
-                ->name('chatbot.conversations.execution');
+                ->name('conversations.execution');
     });
 });
 
