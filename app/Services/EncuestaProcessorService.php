@@ -254,7 +254,15 @@ class EncuestaProcessorService
                 return [$ans['date'] ?? '', ''];
 
             case 'choice':
-                return [$ans['choice']['label'] ?? '', $ans['choice']['id'] ?? ''];
+                $choice = $ans['choice'] ?? [];
+                $respuesta =
+                    $choice['other']
+                    ?? $choice['label']
+                    ?? '';
+                $idRespuesta =
+                    $choice['id']
+                    ?? '';
+                return [$respuesta,$idRespuesta];
 
             case 'choices':
                 return [isset($ans['choices']['labels']) ? implode(', ', $ans['choices']['labels']) : '', ''];
