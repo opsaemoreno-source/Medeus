@@ -82,6 +82,7 @@
                     <select name="tipoPago" class="form-select">
                         <option value="">Todos</option>
                         <option value="GOOGLE_PAY_IN_APP">Google Pay</option>
+                        <option value="APPLE_PAY_IN_APP">Apple Pay</option>
                         <option value="PAYMENT_GATEWAY">Billetera Digital</option>
                         <option value="BANK_TRANSFER">Transferencia</option>
                         <option value="CARD">Tarjeta Débito/Crédito</option>
