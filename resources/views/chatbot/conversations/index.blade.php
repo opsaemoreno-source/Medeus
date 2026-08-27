@@ -5,13 +5,12 @@
 use Illuminate\Support\Str;
 @endphp
 
-<div class="container mt-4">
-    <h2 class="mb-4">
-        Conversaciones del Chatbot
-    </h2>
+<div class="page-heading">
+    <h2>Conversaciones del Chatbot</h2>
+</div>
 
     {{-- FILTROS --}}
-    <div class="card mb-3">
+    <div class="card mb-3 filter-card">
         <div class="card-body">
             <form method="GET" class="row g-2">
                 <div class="col-md-4">
@@ -41,8 +40,9 @@ use Illuminate\Support\Str;
         </div>
     </div>
     {{-- TABLA --}}
-    <div class="card shadow-sm">
+    <div class="card">
         <div class="card-body p-0">
+          <div class="table-responsive">
             <table class="table table-hover mb-0">
                 <thead>
                 <tr>
@@ -120,7 +120,7 @@ use Illuminate\Support\Str;
                 </tbody>
 
             </table>
-
+          </div>
         </div>
 
     </div>
@@ -128,7 +128,5 @@ use Illuminate\Support\Str;
     <div class="mt-3">
         {{ $conversations->links() }}
     </div>
-
-</div>
 
 @endsection

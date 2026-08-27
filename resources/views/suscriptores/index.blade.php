@@ -7,14 +7,13 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container mt-5 mb-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="mb-0">Usuarios</h2>
+<div class="page-heading">
+    <h2>Usuarios</h2>
+    <div class="stat-card card px-3 py-2">
+        <span class="stat-label">Total de usuarios</span>
+        <span class="stat-value">{{ $totalSuscriptores }}</span>
     </div>
-
-    <div class="mb-3">
-        <h5>Total de Usuarios: <strong>{{ $totalSuscriptores }}</strong></h5>
-    </div>
+</div>
 
     <div class="card mb-4">
         <div class="card-body">
@@ -40,7 +39,7 @@
         </div>
     </div>
 
-    <div class="card p-3 mb-4">
+    <div class="card p-3 mb-4 filter-card">
         <h5 class="mb-3">Filtros demográficos</h5>
 
         <div class="row">
@@ -153,34 +152,33 @@
     </div>
 
 
-    <table class="table table-hover table-bordered table-striped" id="suscriptoresTable">
-        <thead class="table-dark">
-            <tr>
-                <th>Usuario ID</th>
-                <th>Nombre completo</th>
-                <th>Correo</th>
-                <th>Teléfono</th>
-                <th>Suscripción Activa</th>
-                <th>Estado</th>
-            </tr>
-        </thead>
-        <tbody></tbody>
-    </table>
-</div>
+    <div class="card">
+        <div class="card-body">
+            <table class="table table-hover table-striped mb-0 w-100" id="suscriptoresTable">
+                <thead class="table-dark">
+                    <tr>
+                        <th>Usuario ID</th>
+                        <th>Nombre completo</th>
+                        <th>Correo</th>
+                        <th>Teléfono</th>
+                        <th>Suscripción Activa</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
 @endsection
 
 @section('scripts')
-<!-- jQuery y DataTables -->
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
-<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
-
 <script>
 $(document).ready(function() {
     let table = $('#suscriptoresTable').DataTable({
         processing: true,
         serverSide: true,
+        responsive: true,
+        language: { url: 'https://cdn.datatables.net/plug-ins/1.13.8/i18n/es-MX.json' },
         ajax: {
             url: '{{ route('suscriptores.data') }}',
             data: function (d) {

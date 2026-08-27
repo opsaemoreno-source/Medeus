@@ -1,8 +1,10 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container mt-4">
-    <h3>Execution Logs - Conversation #{{ $conversation->id }}</h3>
+<div class="page-heading">
+    <h2>Execution Logs — Conversación #{{ $conversation->id }}</h2>
+</div>
+
     @foreach($logsByMessage as $messageId => $logs)
     <div class="card mb-3">
         <div class="card-header d-flex justify-content-between align-items-center">
@@ -34,5 +36,4 @@
         </div>
     </div>
 @endforeach
-</div>
 @endsection

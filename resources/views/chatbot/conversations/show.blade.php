@@ -1,26 +1,28 @@
 @extends('layouts.app')
 @section('content')
 
-<div class="container mt-4">
-    {{-- HEADER --}}
-    <div class="mb-3">
-        <h3>
-            Conversación
-        </h3>
-        <div class="text-muted">
+<div class="page-heading">
+    <div>
+        <h2>Conversación</h2>
+        <div class="text-muted small mt-1">
             Tema:
             <span class="badge bg-info text-dark">
                 {{ $conversation->topic->name }}
             </span>
-            |
+            &middot;
             Session ID:
             <code>
                 {{ $conversation->session_id }}
             </code>
         </div>
     </div>
+    <a href="{{ route('chatbot.conversations.index') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Volver
+    </a>
+</div>
+
     {{-- CHAT CONTAINER --}}
-    <div class="card shadow-sm">
+    <div class="card">
         <div class="card-body" style="max-height: 70vh; overflow-y: auto;">
             @foreach($conversation->messages as $message)
                 @if($message->role === 'user')
@@ -71,5 +73,4 @@
             @endforeach
         </div>
     </div>
-</div>
 @endsection

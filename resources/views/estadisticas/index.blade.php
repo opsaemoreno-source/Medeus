@@ -7,65 +7,70 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container-fluid">
+<div class="page-heading">
+    <h2>Estadísticas</h2>
+</div>
 
-    <div class="row">
+<div class="row g-4">
 
-        {{-- SIDEBAR IZQUIERDO --}}
-        <div class="col-md-3 col-lg-2 bg-light border-end d-flex flex-column p-3" style="min-height: 100vh;">
-
-            <h5 class="text-uppercase fw-bold mb-3 mt-2">Estadísticas</h5>
-
-            <div class="list-group">
-                <button class="list-group-item list-group-item-action py-3 tab-btn" data-tab="encuestas">
-                    Encuestas
-                </button>
-                <button class="list-group-item list-group-item-action py-3 tab-btn" data-tab="suscriptores">
-                    Usuarios
-                </button>
-                <button class="list-group-item list-group-item-action py-3 tab-btn" data-tab="compras">
-                    Compras
-                </button>
-                <button class="list-group-item list-group-item-action py-3 tab-btn" data-tab="avanzado">
-                    Avanzado
-                </button>
-            </div>
-        </div>
-
-        {{-- PANEL PRINCIPAL --}}
-        <div class="col-md-9 col-lg-10 py-4" id="contenidoEstadisticas">
-
-            <h3 class="mb-4">Seleccione una opción del menú</h3>
-            <div class="row mb-3" id="filtroFechasGeneral">
-                <div class="col-md-3">
-                    <input type="date" id="fechaInicio" class="form-control"  value="{{ $fechaInicio }}">
-                </div>
-                <div class="col-md-3">
-                    <input type="date" id="fechaFin" class="form-control"  value="{{ $fechaFin }}">
-                </div>
-                <div class="col-md-2">
-                    <button id="aplicarFiltroFecha" class="btn btn-primary">Aplicar</button>
+    {{-- SIDEBAR IZQUIERDO --}}
+    <div class="col-md-3 col-lg-2">
+        <div class="card">
+            <div class="card-body p-2">
+                <div class="d-flex flex-column gap-1">
+                    <button class="btn text-start tab-btn" data-tab="encuestas">
+                        <i class="bi bi-clipboard-data me-2"></i>Encuestas
+                    </button>
+                    <button class="btn text-start tab-btn" data-tab="suscriptores">
+                        <i class="bi bi-people me-2"></i>Usuarios
+                    </button>
+                    <button class="btn text-start tab-btn" data-tab="compras">
+                        <i class="bi bi-bag-check me-2"></i>Compras
+                    </button>
+                    <button class="btn text-start tab-btn" data-tab="avanzado">
+                        <i class="bi bi-graph-up me-2"></i>Avanzado
+                    </button>
                 </div>
             </div>
-
-            {{-- Loader --}}
-            <div id="loader" class="text-center my-5" style="display: none;">
-                <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;"></div>
-                <p class="mt-3 fs-5">Cargando...</p>
-            </div>
-
-            {{-- Aquí se mostrará el contenido dinámico --}}
-            <div id="panelData" class="mt-4"></div>
-
         </div>
     </div>
 
+    {{-- PANEL PRINCIPAL --}}
+    <div class="col-md-9 col-lg-10" id="contenidoEstadisticas">
+
+        <div class="card mb-3" id="filtroFechasGeneral">
+            <div class="card-body">
+                <div class="row g-2 align-items-end">
+                    <div class="col-md-3">
+                        <label class="form-label">Fecha inicio</label>
+                        <input type="date" id="fechaInicio" class="form-control" value="{{ $fechaInicio }}">
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Fecha fin</label>
+                        <input type="date" id="fechaFin" class="form-control" value="{{ $fechaFin }}">
+                    </div>
+                    <div class="col-md-2">
+                        <button id="aplicarFiltroFecha" class="btn btn-primary w-100">Aplicar</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Loader --}}
+        <div id="loader" class="text-center my-5" style="display: none;">
+            <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;"></div>
+            <p class="mt-3 fs-5">Cargando...</p>
+        </div>
+
+        {{-- Aquí se mostrará el contenido dinámico --}}
+        <div id="panelData"></div>
+
+    </div>
 </div>
 @endsection
 
 
 @section('scripts')
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
 

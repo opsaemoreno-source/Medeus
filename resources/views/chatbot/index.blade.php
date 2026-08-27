@@ -1,24 +1,23 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container mt-4">
+<div class="page-heading">
+    <h2>Temas Chatbot</h2>
+    <a href="{{ route('chatbot.create') }}" class="btn btn-primary">
+        <i class="bi bi-plus-lg me-1"></i>Nuevo Tema
+    </a>
+</div>
 
-    <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2>Temas Chatbot</h2>
+    @if(session('success'))
+        <div class="alert alert-success">
+            {{ session('success') }}
+        </div>
+    @endif
 
-        <a href="{{ route('chatbot.create') }}" class="btn btn-primary">
-            Nuevo Tema
-        </a>
-    </div>
-
-    <div class="card shadow-sm">
+    <div class="card">
         <div class="card-body">
-            @if(session('success'))
-                <div class="alert alert-success">
-                    {{ session('success') }}
-                </div>
-            @endif
-            <table class="table table-striped">
+          <div class="table-responsive">
+            <table class="table table-striped w-100" id="topicsTable">
                 <thead>
                     <tr>
                         <th>Nombre</th>
@@ -53,33 +52,43 @@
                             </td>
 
                             <td>
-                                <a href="{{ route('chatbot.edit', $topic) }}" class="btn btn-sm btn-primary">Editar</a>
-                                <a href="{{ route('chatbot.versions', $topic) }}" class="btn btn-sm btn-secondary">Historial</a>
-                                <form
-                                    method="POST"
-                                    action="{{ route('chatbot.duplicate', $topic) }}"
-                                    style="display:inline;">
-                                    @csrf
-                                    <button class="btn btn-sm btn-info">Duplicar</button>
-                                </form>
+                                <div class="d-flex flex-wrap gap-1 action-buttons">
+                                    <a href="{{ route('chatbot.edit', $topic) }}" class="btn btn-sm btn-primary" title="Editar">
+                                        <i class="bi bi-pencil-square"></i> Editar
+                                    </a>
+                                    <a href="{{ route('chatbot.versions', $topic) }}" class="btn btn-sm btn-outline-secondary" title="Historial">
+                                        <i class="bi bi-clock-history"></i>
+                                    </a>
+                                    <form method="POST" action="{{ route('chatbot.duplicate', $topic) }}">
+                                        @csrf
+                                        <button class="btn btn-sm btn-outline-info" title="Duplicar">
+                                            <i class="bi bi-copy"></i>
+                                        </button>
+                                    </form>
 
-                                @if($topic->active)
-                                    <form method="POST" action="{{ route('chatbot.deactivate', $topic) }}">
-                                        @csrf
-                                        <button class="btn btn-sm btn-warning">Desactivar</button>
-                                    </form>
-                                @else
-                                    <form method="POST" action="{{ route('chatbot.activate', $topic) }}">
-                                        @csrf
-                                        <button class="btn btn-sm btn-success">Activar</button>
-                                    </form>
-                                @endif
-                                <button
-                                    type="button"
-                                    class="btn btn-sm btn-outline-secondary copy-url"
-                                    data-url="{{ \App\Defaults\ChatbotDefaults::CHAT_URL . $topic->slug }}">
-                                    Copiar URL
-                                </button>
+                                    @if($topic->active)
+                                        <form method="POST" action="{{ route('chatbot.deactivate', $topic) }}">
+                                            @csrf
+                                            <button class="btn btn-sm btn-outline-warning" title="Desactivar">
+                                                <i class="bi bi-pause-circle"></i> Desactivar
+                                            </button>
+                                        </form>
+                                    @else
+                                        <form method="POST" action="{{ route('chatbot.activate', $topic) }}">
+                                            @csrf
+                                            <button class="btn btn-sm btn-outline-success" title="Activar">
+                                                <i class="bi bi-play-circle"></i> Activar
+                                            </button>
+                                        </form>
+                                    @endif
+                                    <button
+                                        type="button"
+                                        class="btn btn-sm btn-outline-secondary copy-url"
+                                        data-url="{{ \App\Defaults\ChatbotDefaults::CHAT_URL . $topic->slug }}"
+                                        title="Copiar URL">
+                                        <i class="bi bi-link-45deg"></i>
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     @empty
@@ -92,14 +101,19 @@
                 </tbody>
 
             </table>
-
+          </div>
         </div>
     </div>
-
-</div>
 @endsection
 @section('scripts')
 <script>
+$(function () {
+    $('#topicsTable').DataTable({
+        order: [],
+        language: { url: 'https://cdn.datatables.net/plug-ins/1.13.8/i18n/es-MX.json' }
+    });
+});
+
 document.addEventListener('click', async function (e) {
     const button = e.target.closest('.copy-url');
 

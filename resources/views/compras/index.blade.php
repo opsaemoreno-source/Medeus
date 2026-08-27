@@ -7,12 +7,12 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container-fluid px-4">
-
-    <h4 class="mb-3">Compras</h4>
+<div class="page-heading">
+    <h2>Compras</h2>
+</div>
 
     {{-- Filtros --}}
-    <div class="card mb-3">
+    <div class="card mb-3 filter-card">
         <div class="card-body">
             <form id="filtrosCompras" class="row g-3">
 
@@ -114,41 +114,41 @@
     </div>
 
     {{-- Totales --}}
-    <div class="row mb-3">
+    <div class="row mb-3 g-3">
         {{-- HISTÓRICOS --}}
-        <div class="col-md-3">
-            <div class="card border-secondary">
+        <div class="col-6 col-md-3">
+            <div class="stat-card card h-100">
                 <div class="card-body">
-                    <h6 class="text-muted">Ingresos históricos (HNL)</h6>
-                    <h3 id="totalHNLHistorico">—</h3>
+                    <div class="stat-label">Ingresos históricos (HNL)</div>
+                    <div class="stat-value" id="totalHNLHistorico">—</div>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-3">
-            <div class="card border-secondary">
+        <div class="col-6 col-md-3">
+            <div class="stat-card card h-100">
                 <div class="card-body">
-                    <h6 class="text-muted">Ingresos históricos (USD)</h6>
-                    <h3 id="totalUSDHistorico">—</h3>
+                    <div class="stat-label">Ingresos históricos (USD)</div>
+                    <div class="stat-value" id="totalUSDHistorico">—</div>
                 </div>
             </div>
         </div>
 
         {{-- ACTUALES --}}
-        <div class="col-md-3">
-            <div class="card border-primary">
+        <div class="col-6 col-md-3">
+            <div class="stat-card card h-100 border-primary">
                 <div class="card-body">
-                    <h6 class="text-muted">Ingresos actuales (HNL)</h6>
-                    <h3 id="totalHNLActual">—</h3>
+                    <div class="stat-label">Ingresos actuales (HNL)</div>
+                    <div class="stat-value" id="totalHNLActual">—</div>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-3">
-            <div class="card border-primary">
+        <div class="col-6 col-md-3">
+            <div class="stat-card card h-100 border-primary">
                 <div class="card-body">
-                    <h6 class="text-muted">Ingresos actuales (USD)</h6>
-                    <h3 id="totalUSDActual">—</h3>
+                    <div class="stat-label">Ingresos actuales (USD)</div>
+                    <div class="stat-value" id="totalUSDActual">—</div>
                 </div>
             </div>
         </div>
@@ -182,15 +182,9 @@
             </table>
         </div>
     </div>
-
-</div>
 @endsection
 
 @section('scripts')
-<link rel="stylesheet" href="https://cdn.datatables.net/2.3.5/css/dataTables.dataTables.min.css">
-<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
-<script src="https://cdn.datatables.net/2.3.5/js/dataTables.min.js"></script>
-<script type="text/javascript" language="javascript" src="https://nightly.datatables.net/responsive/js/dataTables.responsive.min.js"></script>
 <script>
 let dataTable = null;
 

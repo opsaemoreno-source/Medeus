@@ -1,0 +1,448 @@
+/* ==========================================================================
+   Medeus — Corporate UI theme
+   Hand-authored (no build step). Loaded after css/app.css (Bootstrap 5).
+   ========================================================================== */
+
+:root {
+  --brand-primary: #123342;
+  --brand-primary-dark: #0b232e;
+  --brand-primary-light: #1c4b60;
+  --brand-accent: #2c8c99;
+  --brand-accent-light: #e7f3f5;
+
+  --surface-bg: #f3f5f8;
+  --surface-card: #ffffff;
+  --surface-border: #e4e8ee;
+
+  --text-main: #1f2933;
+  --text-muted: #6b7785;
+
+  --sidebar-width: 264px;
+  --topbar-height: 64px;
+
+  --radius-md: 0.6rem;
+  --radius-lg: 0.9rem;
+
+  --shadow-soft: 0 2px 10px rgba(18, 51, 66, 0.06);
+  --shadow-card: 0 4px 18px rgba(18, 51, 66, 0.08);
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  background-color: var(--surface-bg);
+  color: var(--text-main);
+  font-family: 'Nunito', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+a {
+  color: var(--brand-accent);
+}
+
+/* ---------------------------------------------------------------------- */
+/* App shell: sidebar + topbar + content                                  */
+/* ---------------------------------------------------------------------- */
+
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+.app-sidebar {
+  width: var(--sidebar-width);
+  background: linear-gradient(180deg, var(--brand-primary) 0%, var(--brand-primary-dark) 100%);
+  color: #dce6ea;
+  border: none;
+}
+
+.app-sidebar .offcanvas-header {
+  background: var(--brand-primary-dark);
+}
+
+.app-sidebar .sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 1.25rem 1.25rem 1rem;
+}
+
+.app-sidebar .sidebar-brand img {
+  height: 34px;
+  width: auto;
+  /* Dark navy logo would be invisible on the dark sidebar; force it white */
+  filter: brightness(0) invert(1);
+}
+
+.app-sidebar .sidebar-brand span {
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: 0.02em;
+  font-size: 1.05rem;
+}
+
+.app-sidebar .sidebar-section-title {
+  text-transform: uppercase;
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  color: #7fa0ab;
+  padding: 1rem 1.25rem 0.35rem;
+  margin: 0;
+}
+
+.app-sidebar .nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  color: #c7d7dd;
+  padding: 0.6rem 1.25rem;
+  border-radius: 0;
+  font-weight: 600;
+  font-size: 0.925rem;
+  border-left: 3px solid transparent;
+  transition: background-color .15s ease, color .15s ease, border-color .15s ease;
+}
+
+.app-sidebar .nav-link i {
+  font-size: 1.05rem;
+  width: 20px;
+  text-align: center;
+  opacity: 0.9;
+}
+
+.app-sidebar .nav-link:hover {
+  background-color: rgba(255, 255, 255, 0.06);
+  color: #fff;
+}
+
+.app-sidebar .nav-link.active {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+  border-left-color: var(--brand-accent);
+}
+
+.app-sidebar .sidebar-footer {
+  margin-top: auto;
+  padding: 1rem 1.25rem;
+  font-size: 0.75rem;
+  color: #6f8b95;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.app-main {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-topbar {
+  height: var(--topbar-height);
+  background: var(--surface-card);
+  border-bottom: 1px solid var(--surface-border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 1.25rem;
+  position: sticky;
+  top: 0;
+  z-index: 1020;
+  box-shadow: var(--shadow-soft);
+}
+
+.app-topbar .btn-sidebar-toggle {
+  border: 1px solid var(--surface-border);
+  background: var(--surface-card);
+  color: var(--brand-primary);
+}
+
+.app-topbar .page-title {
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.app-content {
+  flex: 1;
+  padding: 1.5rem;
+}
+
+@media (max-width: 991.98px) {
+  .app-content {
+    padding: 1rem;
+  }
+}
+
+/* ---------------------------------------------------------------------- */
+/* Cards                                                                   */
+/* ---------------------------------------------------------------------- */
+
+.card {
+  border: 1px solid var(--surface-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-soft);
+}
+
+.card-header {
+  background-color: var(--surface-card);
+  border-bottom: 1px solid var(--surface-border);
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+.card-header.bg-primary {
+  background: var(--brand-primary) !important;
+}
+
+/* Dashboard module cards */
+.module-card {
+  border: none;
+  border-radius: var(--radius-lg);
+  color: #fff;
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+  transition: transform .15s ease, box-shadow .15s ease;
+}
+
+.module-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 24px rgba(18, 51, 66, 0.16);
+}
+
+.module-card .card-body {
+  position: relative;
+  z-index: 1;
+}
+
+.module-card i.module-icon {
+  font-size: 1.8rem;
+  opacity: 0.9;
+}
+
+.module-card--encuestas { background: linear-gradient(135deg, #4fb897, #2f9a7c); }
+.module-card--suscriptores { background: linear-gradient(135deg, #5fb2c4, #3f8fa3); }
+.module-card--compras { background: linear-gradient(135deg, #f2c168, #e0a441); }
+.module-card--estadisticas { background: linear-gradient(135deg, #fb8a72, #e56751); }
+.module-card--chatbot { background: linear-gradient(135deg, #9a7bf2, #7b57e0); }
+.module-card--conversaciones { background: linear-gradient(135deg, #6683ef, #4a63d6); }
+.module-card--ciudades { background: linear-gradient(135deg, #6ea0f4, #4c7ad8); }
+.module-card--usuarios { background: linear-gradient(135deg, #123342, #0b232e); }
+
+/* Stat / KPI cards */
+.stat-card {
+  border-radius: var(--radius-md);
+  border: 1px solid var(--surface-border);
+}
+
+.stat-card .stat-label {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.stat-card .stat-value {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--brand-primary);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Tables                                                                  */
+/* ---------------------------------------------------------------------- */
+
+.table-responsive {
+  border-radius: var(--radius-md);
+}
+
+table.table thead th {
+  background-color: #eef2f6;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+  border-bottom: none;
+  white-space: nowrap;
+}
+
+table.table thead.table-dark th {
+  background-color: var(--brand-primary);
+  color: #fff;
+}
+
+table.table td {
+  vertical-align: middle;
+}
+
+table.table tbody tr:hover {
+  background-color: var(--brand-accent-light);
+}
+
+/* DataTables cosmetic alignment with Bootstrap card */
+.dataTables_wrapper .dataTables_filter input,
+.dataTables_wrapper .dataTables_length select {
+  border-radius: var(--radius-md);
+  border: 1px solid var(--surface-border);
+}
+
+.dataTables_wrapper .dataTables_info,
+.dataTables_wrapper .dataTables_length,
+.dataTables_wrapper .dataTables_filter {
+  padding-top: 0.4rem;
+}
+
+.dataTables_wrapper .page-link {
+  border-radius: var(--radius-md);
+}
+
+/* ---------------------------------------------------------------------- */
+/* Forms                                                                   */
+/* ---------------------------------------------------------------------- */
+
+.form-label {
+  font-weight: 600;
+  font-size: 0.85rem;
+  color: var(--text-main);
+}
+
+.form-control,
+.form-select {
+  border-radius: var(--radius-md);
+  border-color: var(--surface-border);
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--brand-accent);
+  box-shadow: 0 0 0 0.2rem rgba(44, 140, 153, 0.15);
+}
+
+.filter-card .card-body {
+  padding: 1.1rem 1.25rem;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Buttons & badges                                                        */
+/* ---------------------------------------------------------------------- */
+
+.btn {
+  border-radius: var(--radius-md);
+  font-weight: 600;
+}
+
+.btn-primary {
+  background-color: var(--brand-primary);
+  border-color: var(--brand-primary);
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+  background-color: var(--brand-primary-light);
+  border-color: var(--brand-primary-light);
+}
+
+.btn-outline-primary {
+  color: var(--brand-primary);
+  border-color: var(--brand-primary);
+}
+
+.btn-outline-primary:hover {
+  background-color: var(--brand-primary);
+  border-color: var(--brand-primary);
+}
+
+.badge {
+  font-weight: 600;
+  border-radius: 0.4rem;
+}
+
+.action-buttons {
+  align-items: center;
+}
+
+.action-buttons form {
+  margin: 0;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Vertical tab buttons (e.g. estadísticas side menu)                      */
+/* ---------------------------------------------------------------------- */
+
+.tab-btn {
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  color: var(--text-main);
+  padding: 0.65rem 0.9rem;
+}
+
+.tab-btn:hover {
+  background-color: var(--brand-accent-light);
+}
+
+.tab-btn.active {
+  background-color: var(--brand-primary);
+  color: #fff;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Auth pages                                                              */
+/* ---------------------------------------------------------------------- */
+
+.auth-shell {
+  box-sizing: border-box;
+  min-height: 100vh;
+  width: 100%;
+  overflow-x: hidden;
+  background: radial-gradient(circle at top, var(--brand-primary-light) 0%, var(--brand-primary-dark) 65%);
+  padding: 3rem 1.25rem;
+}
+
+.auth-card {
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+  border: none;
+  border-radius: var(--radius-lg);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.28);
+}
+
+.auth-card .card-header {
+  background: var(--surface-card);
+  border-bottom: 1px solid var(--surface-border);
+  text-align: center;
+  padding-top: 1.5rem;
+}
+
+/* ---------------------------------------------------------------------- */
+/* Utility                                                                 */
+/* ---------------------------------------------------------------------- */
+
+.page-heading {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+}
+
+.page-heading h1,
+.page-heading h2,
+.page-heading h3,
+.page-heading h4 {
+  margin: 0;
+  font-weight: 700;
+  color: var(--text-main);
+}
+
+@media (max-width: 575.98px) {
+  .page-heading {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}

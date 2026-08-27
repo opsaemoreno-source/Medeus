@@ -5,16 +5,18 @@
 $totalPages = ceil($total / 25);
 @endphp
 
-<div class="container">
+<div class="page-heading">
+    <h2>Catálogo de normalización de ciudades</h2>
+</div>
 
-    <h4 class="mb-3">Catálogo de normalización de ciudades</h4>
-    
     <div id="saveMessage"
         class="alert alert-success d-none">
         Registro guardado.
     </div>
-    
-    <div class="row mb-3">
+
+    <div class="card filter-card mb-3">
+    <div class="card-body">
+    <div class="row g-2 align-items-end">
 
         <div class="col-md-4">
             <input type="text"
@@ -38,6 +40,8 @@ $totalPages = ceil($total / 25);
             </button>
         </div>
 
+    </div>
+    </div>
     </div>
 
     {{-- ================= TABLA ================= --}}

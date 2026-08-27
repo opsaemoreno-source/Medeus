@@ -1,13 +1,11 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container mt-4">
+<div class="page-heading">
+    <h2>Crear Tema</h2>
+</div>
 
-    <div class="card shadow-sm">
-        <div class="card-header">
-            <h4>Crear Tema</h4>
-        </div>
-
+    <div class="card">
         <div class="card-body">
 
             <form method="POST"
@@ -36,6 +34,4 @@
 
         </div>
     </div>
-
-</div>
 @endsection

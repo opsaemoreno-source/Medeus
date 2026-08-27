@@ -2,18 +2,18 @@
 
 @section('content')
 
-<div class="container mt-4">
+<div class="page-heading">
+    <h2>Historial: {{ $topic->name }}</h2>
+    <a href="{{ route('chatbot.index') }}" class="btn btn-outline-secondary">
+        <i class="bi bi-arrow-left me-1"></i>Volver
+    </a>
+</div>
 
-    <h3>
-        Historial:
-        {{ $topic->name }}
-    </h3>
-
-    <div class="card mt-3">
+    <div class="card">
 
         <div class="card-body">
-
-            <table class="table">
+          <div class="table-responsive">
+            <table class="table table-hover">
 
                 <thead>
                     <tr>
@@ -70,11 +70,8 @@
                 </tbody>
 
             </table>
-
+          </div>
         </div>
 
     </div>
-
-</div>
-
 @endsection

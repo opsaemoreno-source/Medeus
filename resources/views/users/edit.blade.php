@@ -1,14 +1,12 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container mt-5">
-    <div class="row justify-content-center">
+<div class="page-heading">
+    <h2>Editar Usuario</h2>
+</div>
+<div class="row justify-content-center">
         <div class="col-md-6">
             <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">Editar Usuario</h4>
-                </div>
-
                 <div class="card-body">
                     <form action="{{ route('users.update', $user) }}" method="POST">
                         @csrf
@@ -53,5 +51,4 @@
             </div>
         </div>
     </div>
-</div>
 @endsection

@@ -1,8 +1,9 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container mt-4">
-    <h2 class="mb-4">Encuestas Typeform</h2>
+<div class="page-heading">
+    <h2>Encuestas Typeform</h2>
+</div>
 
     {{-- Mensajes flash --}}
     @if(session('success'))
@@ -31,9 +32,10 @@
     </div>
 
     {{-- Tabla de encuestas (sin columna "Acciones") --}}
-    <div class="card shadow">
+    <div class="card">
         <div class="card-body">
-            <table class="table table-striped table-hover">
+          <div class="table-responsive">
+            <table class="table table-striped table-hover w-100" id="encuestasTable">
                 <thead class="table-dark">
                     <tr>
                         <th>ID</th>
@@ -83,16 +85,16 @@
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="text-center text-muted">
+                            <td colspan="7" class="text-center text-muted">
                                 No hay registros disponibles.
                             </td>
                         </tr>
                     @endforelse
                 </tbody>
             </table>
+          </div>
         </div>
     </div>
-</div>
 
 {{-- Modal: aquí el usuario escribe el ID manualmente --}}
 <div class="modal fade" id="procesarModal" tabindex="-1" aria-labelledby="procesarModalLabel" aria-hidden="true">
@@ -151,6 +153,13 @@
 </style>
 
 <script>
+    $(function () {
+        $('#encuestasTable').DataTable({
+            order: [],
+            language: { url: 'https://cdn.datatables.net/plug-ins/1.13.8/i18n/es-MX.json' }
+        });
+    });
+
     let initialState = {};
     function hasChanges() {
         return Array.from(document.querySelectorAll('.auto-update-toggle')).some(el => {
