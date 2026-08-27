@@ -151,7 +151,9 @@
     height: 4rem;
 }
 </style>
+@endsection
 
+@section('scripts')
 <script>
     $(function () {
         $('#encuestasTable').DataTable({

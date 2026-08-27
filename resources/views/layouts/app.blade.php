@@ -9,7 +9,7 @@
     <link rel="icon" type="image/png" sizes="16x16" href="{{ asset('favicon-16x16.png') }}">
     <link rel="manifest" href="{{ asset('site.webmanifest') }}">
 
-    <title>MEDEUS</title>
+    <title>{{ config('app.name', 'Laravel') }}</title>
 
     <!-- Fonts -->
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700&display=swap">
@@ -41,11 +41,11 @@
 
             <div class="app-main">
                 <div class="app-topbar">
-                    <div class="d-flex align-items-center gap-3">
-                        <button class="btn btn-sidebar-toggle d-lg-none" type="button" data-bs-toggle="offcanvas" data-bs-target="#appSidebar" aria-controls="appSidebar">
+                    <div class="d-flex align-items-center gap-3" style="min-width: 0;">
+                        <button class="btn btn-sidebar-toggle d-lg-none flex-shrink-0" type="button" data-bs-toggle="offcanvas" data-bs-target="#appSidebar" aria-controls="appSidebar">
                             <i class="bi bi-list fs-5"></i>
                         </button>
-                        <p class="page-title d-none d-sm-block">MEDEUS</p>
+                        <p class="page-title d-none d-sm-block text-truncate">{{ config('app.name', 'Laravel') }}</p>
                     </div>
 
                     <div class="dropdown">
