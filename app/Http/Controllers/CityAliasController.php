@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use App\Services\CityAliasService;
 use App\Repositories\CityAliasRepository;
 use App\Services\BigQueryService;
@@ -76,6 +77,7 @@ class CityAliasController extends Controller
 
             return response()->json(['ok' => true]);
         } catch (\Exception $e) {
+            Log::error('Error al crear alias de ciudad', ['error' => $e->getMessage(), 'data' => $request->all()]);
             return response()->json([
                 'ok' => false,
                 'message' => $e->getMessage()

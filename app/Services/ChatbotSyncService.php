@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\ChatbotTopic;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Carbon;
 
 class ChatbotSyncService
@@ -34,6 +35,16 @@ class ChatbotSyncService
 
             $success = $response->successful() && ($data['success'] ?? false);
 
+            if ($success) {
+                Log::info('Chatbot topic sincronizado', ['slug' => $topic->slug]);
+            } else {
+                Log::warning('Sincronización de chatbot topic no exitosa', [
+                    'slug' => $topic->slug,
+                    'status' => $response->status(),
+                    'response' => $data,
+                ]);
+            }
+
             $topic->update([
                 'sync_status' => $success ? 'synced' : 'error',
                 'sync_error' => $success ? null : json_encode($data),
@@ -46,6 +57,11 @@ class ChatbotSyncService
             ];
 
         } catch (\Exception $e) {
+
+            Log::error('Error al sincronizar chatbot topic', [
+                'slug' => $topic->slug,
+                'error' => $e->getMessage(),
+            ]);
 
             $topic->update([
                 'sync_status' => 'error',
@@ -84,6 +100,16 @@ class ChatbotSyncService
 
             $success = $response->successful() && ($data['success'] ?? false);
 
+            if ($success) {
+                Log::info('Chatbot topic desactivado', ['slug' => $topic->slug]);
+            } else {
+                Log::warning('Desactivación de chatbot topic no exitosa', [
+                    'slug' => $topic->slug,
+                    'status' => $response->status(),
+                    'response' => $data,
+                ]);
+            }
+
             $topic->update([
                 'sync_status' => $success ? 'disabled' : 'error',
                 'sync_error' => $success ? null : json_encode($data),
@@ -96,6 +122,11 @@ class ChatbotSyncService
             ];
 
         } catch (\Exception $e) {
+
+            Log::error('Error al desactivar chatbot topic', [
+                'slug' => $topic->slug,
+                'error' => $e->getMessage(),
+            ]);
 
             $topic->update([
                 'sync_status' => 'error',

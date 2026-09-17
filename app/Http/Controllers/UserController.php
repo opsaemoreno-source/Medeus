@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 class UserController extends Controller
 {
@@ -27,10 +29,16 @@ class UserController extends Controller
             'password' => 'required|min:6',
         ]);
 
-        User::create([
+        $user = User::create([
             'name' => $validated['name'],
             'email' => $validated['email'],
             'password' => Hash::make($validated['password']),
+        ]);
+
+        Log::notice('Usuario creado', [
+            'actor_id' => Auth::id(),
+            'user_id' => $user->id,
+            'email' => $user->email,
         ]);
 
         return redirect()->route('users.index')
@@ -58,12 +66,23 @@ class UserController extends Controller
 
         $user->update($validated);
 
+        Log::info('Usuario actualizado', [
+            'actor_id' => Auth::id(),
+            'user_id' => $user->id,
+        ]);
+
         return redirect()->route('users.index')
             ->with('success', 'Usuario actualizado correctamente.');
     }
 
     public function destroy(User $user)
     {
+        Log::notice('Usuario eliminado', [
+            'actor_id' => Auth::id(),
+            'user_id' => $user->id,
+            'email' => $user->email,
+        ]);
+
         $user->delete();
 
         return redirect()->route('users.index')

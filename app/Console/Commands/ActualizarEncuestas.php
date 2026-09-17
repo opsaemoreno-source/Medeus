@@ -58,6 +58,13 @@ class ActualizarEncuestas extends Command
 
         $this->info("Resumen → Total: {$total}, OK: {$ok}, Error: {$fail}");
 
+        $resumen = ['total' => $total, 'ok' => $ok, 'fail' => $fail];
+        if ($fail > 0) {
+            Log::warning('encuestas:actualizar finalizó con errores', $resumen);
+        } else {
+            Log::info('encuestas:actualizar finalizó correctamente', $resumen);
+        }
+
         return Command::SUCCESS;
     }
 }

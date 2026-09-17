@@ -111,6 +111,14 @@ class PurgarConversacionesVacias extends Command
 
         $this->info("Resumen → Candidatas: {$total}, Borradas: {$borradas}, Descartadas: {$descartadas}");
 
+        if ($iteraciones >= self::MAX_ITERACIONES) {
+            Log::warning('Purga de conversaciones vacías alcanzó el tope de iteraciones, pueden quedar candidatas sin procesar', [
+                'candidatas' => $total,
+                'borradas'   => $borradas,
+                'maxIteraciones' => self::MAX_ITERACIONES,
+            ]);
+        }
+
         Log::info('Purga de conversaciones vacías del chatbot', [
             'candidatas'  => $total,
             'borradas'    => $borradas,

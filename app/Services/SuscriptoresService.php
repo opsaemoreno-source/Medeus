@@ -3,7 +3,8 @@
 namespace App\Services;
 
 use Google\Cloud\BigQuery\BigQueryClient;
-use Exception; 
+use Illuminate\Support\Facades\Log;
+use Exception;
 
 class SuscriptoresService
 {
@@ -78,6 +79,11 @@ class SuscriptoresService
                 'canal'           => $this->queryCountSimple('canal', $fechaInicio, $fechaFin),
             ];
         } catch (Exception $e) {
+            Log::error('Error al obtener estadísticas de suscriptores', [
+                'error' => $e->getMessage(),
+                'fechaInicio' => $fechaInicio,
+                'fechaFin' => $fechaFin,
+            ]);
             return ['error' => $e->getMessage()];
         }
     }

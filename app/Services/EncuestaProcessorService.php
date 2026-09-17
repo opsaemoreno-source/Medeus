@@ -149,6 +149,12 @@ class EncuestaProcessorService
             }
         }
 
+        Log::info('Encuesta procesada correctamente', [
+            'formId' => $formId,
+            'totalRespuestas' => $totalResponses,
+            'filasInsertadas' => count($rowsToInsert),
+        ]);
+
         return true;
     }
 
@@ -340,6 +346,7 @@ class EncuestaProcessorService
         $data = $resp->json();
 
         if (empty($data['items'])) {
+            Log::info('Actualización de encuesta sin nuevas respuestas', ['formId' => $formId]);
             return true; // no hay nuevas respuestas
         }
 
@@ -395,9 +402,15 @@ class EncuestaProcessorService
             $insert = $table->insertRows($chunk);
 
             if (!$insert->isSuccessful()) {
+                Log::error('BigQuery insert actualización failed', ['formId' => $formId, 'failedRows' => $insert->failedRows()]);
                 throw new Exception("Error insertando respuestas");
             }
         }
+
+        Log::info('Encuesta actualizada correctamente', [
+            'formId' => $formId,
+            'nuevasRespuestas' => count($rowsToInsert),
+        ]);
 
         return true;
     }

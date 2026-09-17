@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 use App\Services\BigQueryService;
 
@@ -29,6 +30,7 @@ class EncuestasController extends Controller
             app(\App\Services\EncuestaProcessorService::class)->procesarEncuesta($id);
             return back()->with('success', "Encuesta $id procesada correctamente.");
         } catch (\Exception $e) {
+            Log::error("Error al procesar encuesta {$id}", ['error' => $e->getMessage()]);
             return back()->with('error', 'Error: '.$e->getMessage());
         }
     }
@@ -46,7 +48,8 @@ class EncuestasController extends Controller
             );
 
         } catch (\Exception $e) {
-            return back()->with('error', 
+            Log::error("Error al actualizar encuesta {$id}", ['error' => $e->getMessage()]);
+            return back()->with('error',
                 'Error: '.$e->getMessage()
             );
         }
@@ -71,6 +74,7 @@ class EncuestasController extends Controller
             ]);
 
         } catch (\Exception $e) {
+            Log::error('Error en syncAutoUpdate de encuestas', ['error' => $e->getMessage(), 'items' => $items]);
             return response()->json([
                 'success' => false,
                 'message' => $e->getMessage()
