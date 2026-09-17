@@ -138,9 +138,6 @@ class EncuestaProcessorService
         $tableId2 = "EncuestasTypeformDetalle";
         $table2 = $bigQuery->dataset($datasetId)->table($tableId2);
 
-        Log::info('Mensaje de prueba');
-        Log::debug('Variable:', ['data' => $rowsToInsert]);
-
         if (!empty($rowsToInsert)) {
             // ajusta chunk size según pruebas (500 es razonable)
             foreach (array_chunk($rowsToInsert, 500) as $chunk) {
