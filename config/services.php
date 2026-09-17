@@ -35,4 +35,8 @@ return [
         ],
     ],
 
+    'bigquery' => [
+        'key_path' => env('GOOGLE_BIGQUERY_KEY_PATH', storage_path('app/google/bigquery.json')),
+    ],
+
 ];

@@ -16,7 +16,7 @@ class ActualizarEncuestas extends Command
     {
         $bigQuery = new BigQueryClient([
             'projectId'  => 'admanagerapiaccess-382213',
-            'keyFilePath'=> storage_path('app/google/bigquery.json')
+            'keyFilePath'=> config('services.bigquery.key_path')
         ]);
 
         $query = "

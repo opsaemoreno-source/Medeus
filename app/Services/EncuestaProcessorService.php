@@ -18,7 +18,7 @@ class EncuestaProcessorService
 
         $bigQuery = new BigQueryClient([
             'projectId'  => $projectId,
-            'keyFilePath'=> storage_path('app/google/bigquery.json')
+            'keyFilePath'=> config('services.bigquery.key_path')
         ]);
 
         $accessToken = env('TYPEFORM_TOKEN');
@@ -281,7 +281,7 @@ class EncuestaProcessorService
 
         $bigQuery = new BigQueryClient([
             'projectId'  => $projectId,
-            'keyFilePath'=> storage_path('app/google/bigquery.json')
+            'keyFilePath'=> config('services.bigquery.key_path')
         ]);
 
         $accessToken = env('TYPEFORM_TOKEN');

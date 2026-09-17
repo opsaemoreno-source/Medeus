@@ -23,7 +23,7 @@ class EstadisticasAvanzadasService
     {
         $this->bigQuery = new BigQueryClient([
             'projectId' => env('GOOGLE_PROJECT_ID'),
-            'keyFilePath' => storage_path('app/google/bigquery.json')
+            'keyFilePath' => config('services.bigquery.key_path')
         ]);
 
         $this->segmentador = new UsuariosSegmentacionService();
