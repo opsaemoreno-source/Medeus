@@ -43,6 +43,7 @@ return [
         'base_url' => env('EVOLOK_BASE_URL', 'https://gro.evolok.net'),
         'username' => env('EVOLOK_USERNAME'),
         'password' => env('EVOLOK_PASSWORD'),
+        'timeout' => env('EVOLOK_TIMEOUT', 300),
     ],
 
 ];

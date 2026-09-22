@@ -11,12 +11,14 @@ class EvolokClient
     protected string $baseUrl;
     protected string $username;
     protected string $password;
+    protected int $timeout;
 
     public function __construct()
     {
         $this->baseUrl  = config('services.evolok.base_url');
         $this->username = config('services.evolok.username');
         $this->password = config('services.evolok.password');
+        $this->timeout  = config('services.evolok.timeout');
     }
 
     /**
@@ -32,6 +34,7 @@ class EvolokClient
         $jar = new CookieJar();
 
         $authResponse = Http::withOptions(['cookies' => $jar])
+            ->timeout($this->timeout)
             ->withHeaders(['Content-Type' => 'application/json'])
             ->post("{$this->baseUrl}/console/api/auth", [
                 'username' => $this->username,
@@ -43,6 +46,7 @@ class EvolokClient
         }
 
         $queryResponse = Http::withOptions(['cookies' => $jar])
+            ->timeout($this->timeout)
             ->withHeaders([
                 'Accept' => 'application/json, text/plain, */*',
                 'Content-Type' => 'application/json;charset=utf-8',
