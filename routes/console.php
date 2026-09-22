@@ -19,3 +19,20 @@ Schedule::command('chatbot:purgar-conversaciones-vacias')
     ->dailyAt('03:30')
     ->withoutOverlapping(30)
     ->runInBackground();
+
+// Sincronización diaria con Evolok (usuarios y compras del módulo de compras).
+Schedule::command('evolok:usuarios')->dailyAt('06:10')
+    ->withoutOverlapping(60)
+    ->runInBackground();
+
+Schedule::command('evolok:compras')->dailyAt('06:15')
+    ->withoutOverlapping(60)
+    ->runInBackground();
+
+Schedule::command('evolok:usuarios-actualizados')->dailyAt('18:00')
+    ->withoutOverlapping(60)
+    ->runInBackground();
+
+Schedule::command('evolok:compras-actualizadas')->dailyAt('18:05')
+    ->withoutOverlapping(60)
+    ->runInBackground();

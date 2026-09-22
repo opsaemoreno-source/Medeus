@@ -39,4 +39,10 @@ return [
         'key_path' => env('GOOGLE_BIGQUERY_KEY_PATH', storage_path('app/google/bigquery.json')),
     ],
 
+    'evolok' => [
+        'base_url' => env('EVOLOK_BASE_URL', 'https://gro.evolok.net'),
+        'username' => env('EVOLOK_USERNAME'),
+        'password' => env('EVOLOK_PASSWORD'),
+    ],
+
 ];
