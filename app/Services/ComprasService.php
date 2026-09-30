@@ -135,6 +135,21 @@ class ComprasService
         return $value;
     }
 
+    protected function addInCondition(array &$conditions, string $column, $value): void
+    {
+        $values = array_filter((array) $value, fn($v) => $v !== null && $v !== '');
+
+        if (!count($values)) {
+            return;
+        }
+
+        $valuesSQL = implode(
+            ', ',
+            array_map(fn($v) => "'" . addslashes($v) . "'", $values)
+        );
+        $conditions[] = "$column IN ($valuesSQL)";
+    }
+
     protected function buildWhere(array $filtros): string
     {
         $conditions = [];
@@ -161,19 +176,15 @@ class ComprasService
         }
 
         // =========================
+        // MARCA / CANAL / TIPO PAGO (uno o varios)
+        // =========================
+        $this->addInCondition($conditions, 'TRIM(LOWER(c.marca))', $filtros['marca'] ?? null);
+        $this->addInCondition($conditions, 'c.canal', $filtros['canal'] ?? null);
+        $this->addInCondition($conditions, 'c.tipoPago', $filtros['tipoPago'] ?? null);
+
+        // =========================
         // RESTO DE FILTROS (sin cambios)
         // =========================
-        if (!empty($filtros['marca'])) {
-            $conditions[] = "TRIM(LOWER(c.marca)) = '{$filtros['marca']}'";
-        }
-
-        if (!empty($filtros['canal'])) {
-            $conditions[] = "c.canal = '{$filtros['canal']}'";
-        }
-
-        if (!empty($filtros['tipoPago'])) {
-            $conditions[] = "c.tipoPago = '{$filtros['tipoPago']}'";
-        }
 
         if (!empty($filtros['producto'])) {
             $conditions[] = "c.nombreProductoDisplay = '{$filtros['producto']}'";

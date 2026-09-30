@@ -57,37 +57,97 @@
                 {{-- Marca --}}
                 <div class="col-md-2">
                     <label class="form-label">Marca</label>
-                    <select name="marca" class="form-select">
-                        <option value="">Todas</option>
-                        <option value="elheraldo">El Heraldo</option>
-                        <option value="laprensa">La Prensa</option>
-                    </select>
+
+                    <div class="dropdown w-100">
+                        <button class="btn btn-outline-secondary dropdown-toggle w-100"
+                                type="button"
+                                data-bs-toggle="dropdown"
+                                data-bs-auto-close="outside">
+                            Seleccionar marcas
+                        </button>
+
+                        <ul class="dropdown-menu w-100 px-2">
+                            @foreach (['elheraldo' => 'El Heraldo', 'laprensa' => 'La Prensa'] as $valor => $texto)
+                                <li>
+                                    <label class="form-check">
+                                        <input type="checkbox"
+                                            class="form-check-input"
+                                            name="marca[]"
+                                            value="{{ $valor }}">
+                                        {{ $texto }}
+                                    </label>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
                 </div>
 
                 {{-- Canal --}}
                 <div class="col-md-2">
                     <label class="form-label">Canal</label>
-                    <select name="canal" class="form-select">
-                        <option value="">Todos</option>
-                        <option value="WEB">WEB</option>
-                        <option value="ANDROID_MOBILE_APP">Android App</option>
-                        <option value="IOS_MOBILE_APP">iOS App</option>
-                        <option value="CUSTOMER_CARE">Customer Care</option>
-                    </select>
+
+                    <div class="dropdown w-100">
+                        <button class="btn btn-outline-secondary dropdown-toggle w-100"
+                                type="button"
+                                data-bs-toggle="dropdown"
+                                data-bs-auto-close="outside">
+                            Seleccionar canales
+                        </button>
+
+                        <ul class="dropdown-menu w-100 px-2">
+                            @foreach ([
+                                'WEB' => 'WEB',
+                                'ANDROID_MOBILE_APP' => 'Android App',
+                                'IOS_MOBILE_APP' => 'iOS App',
+                                'CUSTOMER_CARE' => 'Customer Care',
+                            ] as $valor => $texto)
+                                <li>
+                                    <label class="form-check">
+                                        <input type="checkbox"
+                                            class="form-check-input"
+                                            name="canal[]"
+                                            value="{{ $valor }}">
+                                        {{ $texto }}
+                                    </label>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
                 </div>
 
                 {{-- Tipo pago --}}
                 <div class="col-md-3">
                     <label class="form-label">Tipo de pago</label>
-                    <select name="tipoPago" class="form-select">
-                        <option value="">Todos</option>
-                        <option value="GOOGLE_PAY_IN_APP">Google Pay</option>
-                        <option value="APPLE_PAY_IN_APP">Apple Pay</option>
-                        <option value="PAYMENT_GATEWAY">Billetera Digital</option>
-                        <option value="BANK_TRANSFER">Transferencia</option>
-                        <option value="CARD">Tarjeta Débito/Crédito</option>
-                        <option value="CASH">Efectivo</option>
-                    </select>
+
+                    <div class="dropdown w-100">
+                        <button class="btn btn-outline-secondary dropdown-toggle w-100"
+                                type="button"
+                                data-bs-toggle="dropdown"
+                                data-bs-auto-close="outside">
+                            Seleccionar tipos de pago
+                        </button>
+
+                        <ul class="dropdown-menu w-100 px-2">
+                            @foreach ([
+                                'GOOGLE_PAY_IN_APP' => 'Google Pay',
+                                'APPLE_PAY_IN_APP' => 'Apple Pay',
+                                'PAYMENT_GATEWAY' => 'Billetera Digital',
+                                'BANK_TRANSFER' => 'Transferencia',
+                                'CARD' => 'Tarjeta Débito/Crédito',
+                                'CASH' => 'Efectivo',
+                            ] as $valor => $texto)
+                                <li>
+                                    <label class="form-check">
+                                        <input type="checkbox"
+                                            class="form-check-input"
+                                            name="tipoPago[]"
+                                            value="{{ $valor }}">
+                                        {{ $texto }}
+                                    </label>
+                                </li>
+                            @endforeach
+                        </ul>
+                    </div>
                 </div>
 
                 {{-- Búsqueda --}}
