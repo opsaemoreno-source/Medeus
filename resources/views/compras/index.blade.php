@@ -31,10 +31,10 @@
                     <label class="form-label">Estado</label>
 
                     <div class="dropdown w-100">
-                        <button class="btn btn-outline-secondary dropdown-toggle w-100"
+                        <button class="btn btn-outline-secondary dropdown-toggle w-100 d-flex align-items-center justify-content-between"
                                 type="button"
                                 data-bs-toggle="dropdown">
-                            Seleccionar estados
+                            <span class="text-truncate">Seleccionar estados</span>
                         </button>
 
                         <ul class="dropdown-menu w-100 px-2">
@@ -55,15 +55,15 @@
                 </div>
 
                 {{-- Marca --}}
-                <div class="col-md-2">
+                <div class="col-md-3">
                     <label class="form-label">Marca</label>
 
                     <div class="dropdown w-100">
-                        <button class="btn btn-outline-secondary dropdown-toggle w-100"
+                        <button class="btn btn-outline-secondary dropdown-toggle w-100 d-flex align-items-center justify-content-between"
                                 type="button"
                                 data-bs-toggle="dropdown"
                                 data-bs-auto-close="outside">
-                            Seleccionar marcas
+                            <span class="text-truncate">Seleccionar marcas</span>
                         </button>
 
                         <ul class="dropdown-menu w-100 px-2">
@@ -83,15 +83,15 @@
                 </div>
 
                 {{-- Canal --}}
-                <div class="col-md-2">
+                <div class="col-md-3">
                     <label class="form-label">Canal</label>
 
                     <div class="dropdown w-100">
-                        <button class="btn btn-outline-secondary dropdown-toggle w-100"
+                        <button class="btn btn-outline-secondary dropdown-toggle w-100 d-flex align-items-center justify-content-between"
                                 type="button"
                                 data-bs-toggle="dropdown"
                                 data-bs-auto-close="outside">
-                            Seleccionar canales
+                            <span class="text-truncate">Seleccionar canales</span>
                         </button>
 
                         <ul class="dropdown-menu w-100 px-2">
@@ -120,11 +120,11 @@
                     <label class="form-label">Tipo de pago</label>
 
                     <div class="dropdown w-100">
-                        <button class="btn btn-outline-secondary dropdown-toggle w-100"
+                        <button class="btn btn-outline-secondary dropdown-toggle w-100 d-flex align-items-center justify-content-between"
                                 type="button"
                                 data-bs-toggle="dropdown"
                                 data-bs-auto-close="outside">
-                            Seleccionar tipos de pago
+                            <span class="text-truncate">Seleccionar tipos de pago</span>
                         </button>
 
                         <ul class="dropdown-menu w-100 px-2">
