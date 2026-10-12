@@ -21,7 +21,7 @@ class EncuestaProcessorService
             'keyFilePath'=> config('services.bigquery.key_path')
         ]);
 
-        $accessToken = env('TYPEFORM_TOKEN');
+        $accessToken = config('services.typeform.token');
         if (!$accessToken) {
             throw new Exception("TYPEFORM_TOKEN no está configurado.");
         }
@@ -287,7 +287,7 @@ class EncuestaProcessorService
             'keyFilePath'=> config('services.bigquery.key_path')
         ]);
 
-        $accessToken = env('TYPEFORM_TOKEN');
+        $accessToken = config('services.typeform.token');
 
         if (!$accessToken) {
             throw new Exception("TYPEFORM_TOKEN no configurado");
@@ -335,17 +335,56 @@ class EncuestaProcessorService
             $since = (new DateTime($ultimaFecha))->format('Y-m-d\TH:i:s\Z');
         }
 
-        $resp = Http::withToken($accessToken)->get($apiUrl, [
-            'since' => $since
+        // Typeform devuelve 25 respuestas por defecto (más recientes primero):
+        // hay que paginar o se pierden las anteriores al avanzar MAX(fechaFin).
+        $items = [];
+        $before = null;
+
+        do {
+            $params = ['since' => $since, 'page_size' => 1000];
+            if ($before) {
+                $params['before'] = $before;
+            }
+
+            $resp = Http::withToken($accessToken)->get($apiUrl, $params);
+
+            if (!$resp->successful()) {
+                throw new Exception("Error Typeform ({$resp->status()}): ".$resp->body());
+            }
+
+            $pagina = $resp->json()['items'] ?? [];
+            if (empty($pagina)) {
+                break;
+            }
+
+            $items = array_merge($items, $pagina);
+            $before = end($pagina)['token'] ?? null;
+
+        } while ($before);
+
+        // 'since' es inclusivo: descartar respuestas que ya están guardadas
+        $query = "
+            SELECT DISTINCT token
+            FROM `$projectId.$datasetId.$tableDetalle`
+            WHERE idEncuesta = @id AND fechaFin >= @since
+        ";
+
+        $jobConfig = $bigQuery->query($query)->parameters([
+            'id' => $formId,
+            'since' => $ultimaFecha,
         ]);
 
-        if (!$resp->successful()) {
-            throw new Exception("Error Typeform: ".$resp->body());
+        $tokensExistentes = [];
+        foreach ($bigQuery->runQuery($jobConfig) as $row) {
+            $tokensExistentes[$row['token']] = true;
         }
 
-        $data = $resp->json();
+        $items = array_values(array_filter(
+            $items,
+            fn ($item) => !isset($tokensExistentes[$item['token'] ?? ''])
+        ));
 
-        if (empty($data['items'])) {
+        if (empty($items)) {
             Log::info('Actualización de encuesta sin nuevas respuestas', ['formId' => $formId]);
             return true; // no hay nuevas respuestas
         }
@@ -377,7 +416,7 @@ class EncuestaProcessorService
         */
 
         $respuestas = $this->formatearRespuestas(
-            $data['items'],
+            $items,
             $formId,
             $mapaPreguntas
         );
