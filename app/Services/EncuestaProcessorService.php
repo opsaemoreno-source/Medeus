@@ -448,7 +448,8 @@ class EncuestaProcessorService
 
         Log::info('Encuesta actualizada correctamente', [
             'formId' => $formId,
-            'nuevasRespuestas' => count($rowsToInsert),
+            'nuevasRespuestas' => count($items),
+            'filasInsertadas' => count($rowsToInsert),
         ]);
 
         return true;
