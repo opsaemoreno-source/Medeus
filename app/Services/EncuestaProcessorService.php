@@ -295,12 +295,14 @@ class EncuestaProcessorService
 
         /*
         =============================
-        Obtener última fecha guardada
+        Respuestas ya guardadas
         =============================
         */
 
+        // Se compara por token en lugar de usar 'since' = MAX(fechaFin): así se
+        // recuperan también las respuestas que faltan en medio (huecos).
         $query = "
-            SELECT MAX(fechaFin) as ultima
+            SELECT DISTINCT token
             FROM `$projectId.$datasetId.$tableDetalle`
             WHERE idEncuesta = @id
         ";
@@ -309,16 +311,9 @@ class EncuestaProcessorService
             'id' => $formId
         ]);
 
-        $results = $bigQuery->runQuery($jobConfig);
-
-        $ultimaFecha = null;
-
-        foreach ($results as $row) {
-            $ultimaFecha = $row['ultima'] ?? null;
-        }
-
-        if (!$ultimaFecha) {
-            throw new Exception("No existe información previa de la encuesta");
+        $tokensExistentes = [];
+        foreach ($bigQuery->runQuery($jobConfig) as $row) {
+            $tokensExistentes[$row['token']] = true;
         }
 
         /*
@@ -327,30 +322,7 @@ class EncuestaProcessorService
         =============================
         */
 
-        if ($ultimaFecha instanceof \DateTime) {
-            $since = $ultimaFecha->format('Y-m-d\TH:i:s\Z');
-        } else {
-            $since = (new DateTime($ultimaFecha))->format('Y-m-d\TH:i:s\Z');
-        }
-
-        $items = $this->obtenerRespuestasTypeform($formId, $accessToken, ['since' => $since]);
-
-        // 'since' es inclusivo: descartar respuestas que ya están guardadas
-        $query = "
-            SELECT DISTINCT token
-            FROM `$projectId.$datasetId.$tableDetalle`
-            WHERE idEncuesta = @id AND fechaFin >= @since
-        ";
-
-        $jobConfig = $bigQuery->query($query)->parameters([
-            'id' => $formId,
-            'since' => $ultimaFecha,
-        ]);
-
-        $tokensExistentes = [];
-        foreach ($bigQuery->runQuery($jobConfig) as $row) {
-            $tokensExistentes[$row['token']] = true;
-        }
+        $items = $this->obtenerRespuestasTypeform($formId, $accessToken);
 
         $items = array_values(array_filter(
             $items,
