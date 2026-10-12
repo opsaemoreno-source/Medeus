@@ -327,40 +327,13 @@ class EncuestaProcessorService
         =============================
         */
 
-        $apiUrl = "https://api.typeform.com/forms/{$formId}/responses";
-
         if ($ultimaFecha instanceof \DateTime) {
             $since = $ultimaFecha->format('Y-m-d\TH:i:s\Z');
         } else {
             $since = (new DateTime($ultimaFecha))->format('Y-m-d\TH:i:s\Z');
         }
 
-        // Typeform devuelve 25 respuestas por defecto (más recientes primero):
-        // hay que paginar o se pierden las anteriores al avanzar MAX(fechaFin).
-        $items = [];
-        $before = null;
-
-        do {
-            $params = ['since' => $since, 'page_size' => 1000];
-            if ($before) {
-                $params['before'] = $before;
-            }
-
-            $resp = Http::withToken($accessToken)->get($apiUrl, $params);
-
-            if (!$resp->successful()) {
-                throw new Exception("Error Typeform ({$resp->status()}): ".$resp->body());
-            }
-
-            $pagina = $resp->json()['items'] ?? [];
-            if (empty($pagina)) {
-                break;
-            }
-
-            $items = array_merge($items, $pagina);
-            $before = end($pagina)['token'] ?? null;
-
-        } while ($before);
+        $items = $this->obtenerRespuestasTypeform($formId, $accessToken, ['since' => $since]);
 
         // 'since' es inclusivo: descartar respuestas que ya están guardadas
         $query = "
@@ -453,5 +426,135 @@ class EncuestaProcessorService
         ]);
 
         return true;
+    }
+
+    /**
+     * Borra el detalle de la encuesta y lo vuelve a cargar completo desde Typeform.
+     * Sirve para reparar respuestas perdidas o duplicadas.
+     *
+     * @return array{respuestas:int, filasInsertadas:int}
+     */
+    public function reprocesarEncuesta(string $formId): array
+    {
+        $projectId = 'admanagerapiaccess-382213';
+        $datasetId = "UsuariosOPSA";
+        $tableDetalle = "EncuestasTypeformDetalle";
+
+        $bigQuery = new BigQueryClient([
+            'projectId'  => $projectId,
+            'keyFilePath'=> config('services.bigquery.key_path')
+        ]);
+
+        $accessToken = config('services.typeform.token');
+
+        if (!$accessToken) {
+            throw new Exception("TYPEFORM_TOKEN no configurado");
+        }
+
+        // Descargar todo antes de borrar: si Typeform falla, no se toca BigQuery
+        $formResp = Http::withToken($accessToken)
+            ->get("https://api.typeform.com/forms/{$formId}");
+
+        if (!$formResp->successful()) {
+            throw new Exception("Typeform API error ({$formResp->status()}): ".$formResp->body());
+        }
+
+        $mapaPreguntas = [];
+        foreach ($formResp->json()['fields'] ?? [] as $field) {
+            if (isset($field['id'], $field['title'])) {
+                $mapaPreguntas[] = ['id' => $field['id'], 'texto' => $field['title']];
+            }
+        }
+
+        $items = $this->obtenerRespuestasTypeform($formId, $accessToken);
+
+        $rowsToInsert = [];
+        foreach ($this->formatearRespuestas($items, $formId, $mapaPreguntas) as $row) {
+            $rowsToInsert[] = ['data' => $row];
+        }
+
+        /*
+        =============================
+        Borrar detalle actual
+        =============================
+        */
+
+        $query = "
+            DELETE FROM `$projectId.$datasetId.$tableDetalle`
+            WHERE idEncuesta = @id
+        ";
+
+        try {
+            $bigQuery->runQuery($bigQuery->query($query)->parameters(['id' => $formId]));
+        } catch (\Google\Cloud\Core\Exception\ServiceException $e) {
+            if (stripos($e->getMessage(), 'streaming buffer') !== false) {
+                throw new Exception(
+                    "Hay filas recién insertadas en el streaming buffer de BigQuery; "
+                    ."espera ~90 minutos desde la última actualización y vuelve a intentar."
+                );
+            }
+            throw $e;
+        }
+
+        /*
+        =============================
+        Insertar todo de nuevo
+        =============================
+        */
+
+        $table = $bigQuery->dataset($datasetId)->table($tableDetalle);
+
+        foreach (array_chunk($rowsToInsert, 500) as $chunk) {
+            $insert = $table->insertRows($chunk);
+
+            if (!$insert->isSuccessful()) {
+                Log::error('BigQuery insert reproceso failed', ['formId' => $formId, 'failedRows' => $insert->failedRows()]);
+                throw new Exception("Error insertando respuestas; el detalle quedó incompleto, vuelve a ejecutar el reproceso.");
+            }
+        }
+
+        Log::info('Encuesta reprocesada correctamente', [
+            'formId' => $formId,
+            'respuestas' => count($items),
+            'filasInsertadas' => count($rowsToInsert),
+        ]);
+
+        return ['respuestas' => count($items), 'filasInsertadas' => count($rowsToInsert)];
+    }
+
+    /**
+     * Descarga todas las respuestas de un formulario paginando con 'before'.
+     * Typeform devuelve 25 por defecto (más recientes primero), así que sin
+     * paginar se pierden respuestas.
+     */
+    private function obtenerRespuestasTypeform(string $formId, string $accessToken, array $params = []): array
+    {
+        $apiUrl = "https://api.typeform.com/forms/{$formId}/responses";
+        $items = [];
+        $before = null;
+
+        do {
+            $query = $params + ['page_size' => 1000];
+            if ($before) {
+                $query['before'] = $before;
+            }
+
+            $resp = Http::withToken($accessToken)->get($apiUrl, $query);
+
+            if (!$resp->successful()) {
+                throw new Exception("Error Typeform ({$resp->status()}): ".$resp->body());
+            }
+
+            $pagina = $resp->json()['items'] ?? [];
+            if (empty($pagina)) {
+                break;
+            }
+
+            $items = array_merge($items, $pagina);
+            $before = end($pagina)['token'] ?? null;
+
+        } while ($before);
+
+        return $items;
     }
 }
