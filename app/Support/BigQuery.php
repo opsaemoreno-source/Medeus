@@ -4,6 +4,7 @@ namespace App\Support;
 
 use Google\Cloud\BigQuery\BigQueryClient;
 use InvalidArgumentException;
+use RuntimeException;
 
 /**
  * Punto único de configuración de BigQuery (cliente, proyecto y dataset) y
@@ -18,12 +19,26 @@ class BigQuery
 
     public static function projectId(): string
     {
-        return config('services.bigquery.project_id');
+        return self::requerido('services.bigquery.project_id', 'GOOGLE_PROJECT_ID');
     }
 
     public static function dataset(): string
     {
-        return config('services.bigquery.dataset');
+        return self::requerido('services.bigquery.dataset', 'BIGQUERY_DATASET');
+    }
+
+    private static function requerido(string $key, string $env): string
+    {
+        $value = config($key);
+
+        if (!is_string($value) || $value === '') {
+            throw new RuntimeException(
+                "Falta la configuración {$key} ({$env}). Si se usa config:cache, "
+                . "ejecuta `php artisan config:clear` para regenerarla."
+            );
+        }
+
+        return $value;
     }
 
     /**

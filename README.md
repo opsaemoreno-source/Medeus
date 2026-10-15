@@ -126,6 +126,15 @@ Además de las estándar de Laravel (`APP_*`, `DB_*`, `SESSION_*`, etc.):
 | `CHATBOT_API_URL` | URL base de la API del chatbot (se llama a `/admin/sync-topic` y `/admin/deactivate-topic/{slug}`). |
 | `CHATBOT_API_KEY` | Se envía en la cabecera `X-API-KEY` a la API del chatbot. |
 
+### Actualizar el servidor
+
+Después de cada `git pull`, regenerar la caché de configuración; si no, Laravel sigue usando la configuración anterior y no ve claves nuevas de `config/`:
+
+```bash
+php artisan config:clear
+php artisan config:cache   # si producción usa caché de configuración
+```
+
 ### Scheduler
 
 Los procesos automáticos dependen del scheduler de Laravel. En el servidor debe existir un cron (o tarea programada de Windows) que ejecute cada minuto:

@@ -33,6 +33,15 @@ class BigQueryConsultasTest extends TestCase
         $this->assertSame('`proyecto-test.dataset_test.Compras`', BigQuery::table('Compras'));
     }
 
+    public function test_configuracion_faltante_da_un_error_claro(): void
+    {
+        config(['services.bigquery.project_id' => null]);
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage('php artisan config:clear');
+        BigQuery::table('Compras');
+    }
+
     public function test_fecha_acepta_formatos_validos_y_rechaza_el_resto(): void
     {
         $this->assertNull(BigQuery::fecha(null));
