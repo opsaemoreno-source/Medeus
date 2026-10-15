@@ -87,9 +87,17 @@ class CityAliasController extends Controller
 
     public function update(Request $request, string $alias)
     {
-        $this->service->update($alias, $request->all());
+        try {
+            $this->service->update($alias, $request->all());
 
-        return response()->json(['ok' => true]);
+            return response()->json(['ok' => true]);
+        } catch (\Exception $e) {
+            Log::error('Error al actualizar alias de ciudad', ['error' => $e->getMessage(), 'alias' => $alias, 'data' => $request->all()]);
+            return response()->json([
+                'ok' => false,
+                'message' => $e->getMessage() === 'Alias duplicado' ? 'Este alias ya existe' : $e->getMessage()
+            ], 400);
+        }
     }
 
     public function canonicasSearch(Request $request)
@@ -103,7 +111,7 @@ class CityAliasController extends Controller
 
     public function checkDuplicate(Request $request)
     {
-        $alias = $request->get('alias');
+        $alias = (string) $request->get('alias');
         $original = $request->get('original'); // opcional (para edición)
 
         $exists = $this->service->existsDuplicate($alias, $original);

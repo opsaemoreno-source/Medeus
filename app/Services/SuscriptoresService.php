@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use Google\Cloud\BigQuery\BigQueryClient;
+use App\Support\BigQuery;
 use Illuminate\Support\Facades\Log;
 use Exception;
 
@@ -10,7 +10,6 @@ class SuscriptoresService
 {
     protected $bigQuery;
     protected UsuariosSegmentacionService $segmentador;
-    protected string $datasetId = 'UsuariosOPSA';
     protected string $tablaUsuarios;
     protected string $tablaCompras;
     protected string $tablaEncuestas;
@@ -24,21 +23,18 @@ class SuscriptoresService
 
     public function __construct()
     {
-        $this->bigQuery = new BigQueryClient([
-            'projectId' => env('GOOGLE_PROJECT_ID'),
-            'keyFilePath' => config('services.bigquery.key_path')
-        ]);
+        $this->bigQuery = BigQuery::client();
 
         $this->segmentador = new UsuariosSegmentacionService();
-        $this->tablaUsuarios = "`admanagerapiaccess-382213.UsuariosOPSA.vta_usuariosEvolok`";
-        $this->tablaCompras = "`admanagerapiaccess-382213.UsuariosOPSA.Compras`";
-        $this->tablaEncuestas = "`admanagerapiaccess-382213.UsuariosOPSA.EncuestasTypeform`";
-        $this->tablaProfesiones = "`admanagerapiaccess-382213.UsuariosOPSA.data_profesion`";
-        $this->tablaNivEducativo = "`admanagerapiaccess-382213.UsuariosOPSA.data_nivelEducativo`";
-        $this->tablaPaises = "`admanagerapiaccess-382213.UsuariosOPSA.data_paises`";
-        $this->tablaEncuestasDetalle = "`admanagerapiaccess-382213.UsuariosOPSA.EncuestasTypeformDetalle`";
-        $this->catalogoCiudades = "`admanagerapiaccess-382213.UsuariosOPSA.catalogo_ciudadesNormalizacion`";
-        $this->vtaCiudadesNormalizadas = "`admanagerapiaccess-382213.UsuariosOPSA.vta_ciudadesNormalizadas`";
+        $this->tablaUsuarios = BigQuery::table('vta_usuariosEvolok');
+        $this->tablaCompras = BigQuery::table('Compras');
+        $this->tablaEncuestas = BigQuery::table('EncuestasTypeform');
+        $this->tablaProfesiones = BigQuery::table('data_profesion');
+        $this->tablaNivEducativo = BigQuery::table('data_nivelEducativo');
+        $this->tablaPaises = BigQuery::table('data_paises');
+        $this->tablaEncuestasDetalle = BigQuery::table('EncuestasTypeformDetalle');
+        $this->catalogoCiudades = BigQuery::table('catalogo_ciudadesNormalizacion');
+        $this->vtaCiudadesNormalizadas = BigQuery::table('vta_ciudadesNormalizadas');
     }
 
     /**
@@ -97,6 +93,9 @@ class SuscriptoresService
         ?string $fechaFin = null
     ): array {
 
+        $fechaInicio = BigQuery::fecha($fechaInicio);
+        $fechaFin = BigQuery::fecha($fechaFin);
+
         $where = '';
         if ($fechaInicio && $fechaFin) {
             $where = "WHERE fechaCreacion BETWEEN '$fechaInicio 00:00:00' AND '$fechaFin 23:59:59'";
@@ -143,6 +142,11 @@ class SuscriptoresService
         ?string $fechaFin = null
     ): array {
 
+        $fechaInicio = BigQuery::fecha($fechaInicio);
+        $fechaFin = BigQuery::fecha($fechaFin);
+
+        $tablaCatalogo = BigQuery::table($tablaCatalogo);
+
         $where = '';
         if ($fechaInicio && $fechaFin) {
             $where = "WHERE u.fechaCreacion BETWEEN '$fechaInicio 00:00:00' AND '$fechaFin 23:59:59'";
@@ -157,7 +161,7 @@ class SuscriptoresService
                 ) AS categoria,
                 COUNT(*) AS total
             FROM {$this->tablaUsuarios} u
-            LEFT JOIN `{$this->datasetId}.{$tablaCatalogo}` cat
+            LEFT JOIN {$tablaCatalogo} cat
                 ON CAST(cat.$idCatalogo AS STRING)
                 = CAST(u.$campoUsuario AS STRING)
             $where
@@ -193,10 +197,13 @@ class SuscriptoresService
         ?string $fechaFin = null
     ): array
     {
+        $fechaInicio = BigQuery::fecha($fechaInicio);
+        $fechaFin = BigQuery::fecha($fechaFin);
+
         // Selección de tabla y campo según el modo
         $tabla = $modo === 'original'
             ? "{$this->tablaUsuarios}"
-            : "`{$this->datasetId}.vta_ciudadesNormalizadas`";
+            : $this->vtaCiudadesNormalizadas;
 
         // Condición WHERE
         $where = [];
@@ -257,6 +264,9 @@ class SuscriptoresService
         ?string $fechaFin = null
     ): array {
 
+        $fechaInicio = BigQuery::fecha($fechaInicio);
+        $fechaFin = BigQuery::fecha($fechaFin);
+
         $where = '';
         if ($fechaInicio && $fechaFin) {
             $where = "WHERE u.fechaCreacion BETWEEN '$fechaInicio 00:00:00' AND '$fechaFin 23:59:59'";
@@ -270,7 +280,7 @@ class SuscriptoresService
                 ) AS categoria,
                 COUNT(1) AS total
             FROM {$this->tablaUsuarios} u
-            LEFT JOIN `{$this->datasetId}.vta_ciudadesNormalizadas` c
+            LEFT JOIN {$this->vtaCiudadesNormalizadas} c
                 ON REGEXP_REPLACE(
                     REGEXP_REPLACE(
                         NORMALIZE(UPPER(u.ciudad), NFD),
@@ -289,7 +299,8 @@ class SuscriptoresService
 
     public function obtenerUsuariosFiltrados(array $filtros, int $limit = 100, int $offset = 0): array
     {
-        $where = $this->segmentador->buildWhere($filtros);
+        $params = [];
+        $where = $this->segmentador->buildWhere($filtros, $params);
 
         $sql = "
             SELECT
@@ -307,13 +318,12 @@ class SuscriptoresService
             LIMIT $limit OFFSET $offset
         ";
 
-        return $this->runQueryMultipleRows($sql);
+        return $this->runQueryMultipleRows($sql, $params);
     }
 
-    private function runQueryMultipleRows(string $query): array
+    private function runQueryMultipleRows(string $query, array $params = []): array
     {
-        $queryJob = $this->bigQuery->query($query);
-        $results = $this->bigQuery->runQuery($queryJob);
+        $results = BigQuery::run($this->bigQuery, $query, $params);
 
         $data = [];
         foreach ($results->rows() as $row) {

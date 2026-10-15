@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use Google\Cloud\BigQuery\BigQueryClient;
+use App\Support\BigQuery;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use DateTime;
@@ -12,14 +12,11 @@ class EncuestaProcessorService
 {
     public function procesarEncuesta(string $formId)
     {
-        $projectId = 'admanagerapiaccess-382213';
-        $datasetId = "UsuariosOPSA";
+        $projectId = BigQuery::projectId();
+        $datasetId = BigQuery::dataset();
         $tableId = "EncuestasTypeform";
 
-        $bigQuery = new BigQueryClient([
-            'projectId'  => $projectId,
-            'keyFilePath'=> config('services.bigquery.key_path')
-        ]);
+        $bigQuery = BigQuery::client();
 
         $accessToken = config('services.typeform.token');
         if (!$accessToken) {
@@ -277,15 +274,12 @@ class EncuestaProcessorService
 
     public function actualizarEncuesta(string $formId)
     {
-        $projectId = 'admanagerapiaccess-382213';
-        $datasetId = "UsuariosOPSA";
+        $projectId = BigQuery::projectId();
+        $datasetId = BigQuery::dataset();
         $tableDetalle = "EncuestasTypeformDetalle";
         $tableBase = "EncuestasTypeform";
 
-        $bigQuery = new BigQueryClient([
-            'projectId'  => $projectId,
-            'keyFilePath'=> config('services.bigquery.key_path')
-        ]);
+        $bigQuery = BigQuery::client();
 
         $accessToken = config('services.typeform.token');
 
@@ -408,14 +402,11 @@ class EncuestaProcessorService
      */
     public function reprocesarEncuesta(string $formId): array
     {
-        $projectId = 'admanagerapiaccess-382213';
-        $datasetId = "UsuariosOPSA";
+        $projectId = BigQuery::projectId();
+        $datasetId = BigQuery::dataset();
         $tableDetalle = "EncuestasTypeformDetalle";
 
-        $bigQuery = new BigQueryClient([
-            'projectId'  => $projectId,
-            'keyFilePath'=> config('services.bigquery.key_path')
-        ]);
+        $bigQuery = BigQuery::client();
 
         $accessToken = config('services.typeform.token');
 

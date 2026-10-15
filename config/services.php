@@ -37,6 +37,13 @@ return [
 
     'bigquery' => [
         'key_path' => env('GOOGLE_BIGQUERY_KEY_PATH', storage_path('app/google/bigquery.json')),
+        'project_id' => env('GOOGLE_PROJECT_ID', 'admanagerapiaccess-382213'),
+        'dataset' => env('BIGQUERY_DATASET', 'UsuariosOPSA'),
+    ],
+
+    'chatbot' => [
+        'url' => env('CHATBOT_API_URL'),
+        'key' => env('CHATBOT_API_KEY'),
     ],
 
     'typeform' => [

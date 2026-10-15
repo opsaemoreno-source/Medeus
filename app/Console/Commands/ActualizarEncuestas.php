@@ -3,7 +3,7 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use Google\Cloud\BigQuery\BigQueryClient;
+use App\Support\BigQuery;
 use App\Services\EncuestaProcessorService;
 use Illuminate\Support\Facades\Log;
 
@@ -14,14 +14,11 @@ class ActualizarEncuestas extends Command
 
     public function handle()
     {
-        $bigQuery = new BigQueryClient([
-            'projectId'  => 'admanagerapiaccess-382213',
-            'keyFilePath'=> config('services.bigquery.key_path')
-        ]);
+        $bigQuery = BigQuery::client();
 
         $query = "
             SELECT id
-            FROM `admanagerapiaccess-382213.UsuariosOPSA.EncuestasTypeform`
+            FROM " . BigQuery::table('EncuestasTypeform') . "
             WHERE autoUpdate = TRUE
             AND id IS NOT NULL
         ";

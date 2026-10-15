@@ -1,7 +1,6 @@
 <?php
 
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\UserController;
 use App\Http\Controllers\EncuestasController;
 use App\Http\Controllers\SuscriptoresController;
 use App\Http\Controllers\EstadisticasController;
@@ -30,7 +29,9 @@ Route::get('/suscriptores', [SuscriptoresController::class, 'index'])
     ->name('suscriptores.index');
 
 // Endpoint AJAX para DataTables
-Route::get('/suscriptores/data', [SuscriptoresController::class, 'data'])->name('suscriptores.data');
+Route::get('/suscriptores/data', [SuscriptoresController::class, 'data'])
+    ->middleware('auth')
+    ->name('suscriptores.data');
 // Obtener estadística por día (rango de fechas opcional)
 Route::get('/suscriptores/estadistica', [SuscriptoresController::class, 'estadisticaPorDia'])
     ->middleware('auth')
@@ -51,16 +52,13 @@ Route::middleware(['auth'])->group(function () {
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('password.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 
-    Route::resource('users', UserController::class);
+    // La gestión de usuarios (Route::resource('users')) está en routes/auth.php,
+    // protegida con 'auth' + 'admin'.
 
     Route::get('/encuestas', [EncuestasController::class, 'index'])->name('encuestas.index');
     Route::post('/encuestas/procesar', [EncuestasController::class, 'procesar'])->name('encuestas.procesar');
     Route::post('/encuestas/actualizar', [EncuestasController::class, 'actualizar'])->name('encuestas.actualizar');
     Route::post('/encuestas/sync-auto-update', [EncuestasController::class, 'syncAutoUpdate']);
-
-    Route::get('/estadisticas', function () {
-        return view('estadisticas.index');
-    })->name('estadisticas.index');
 
     // HUB principal
     Route::get('/estadisticas', [EstadisticasController::class, 'index'])

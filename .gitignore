@@ -23,3 +23,8 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 MaDeUsDB
+MaDeUsDB.sqlite.sql
+/public/adminer*.php
+/public/js/*.map
+/public/css/*.map
+/public/js/*.LICENSE.txt

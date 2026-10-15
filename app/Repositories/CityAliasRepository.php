@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Services\BigQueryService;
+use App\Support\BigQuery;
 
 class CityAliasRepository
 {
@@ -17,8 +18,8 @@ class CityAliasRepository
         $this->bq = $bq->client();
 
         $this->catalogoCiudades = 'catalogo_ciudadesNormalizacion';
-        $this->projectId = env('GOOGLE_PROJECT_ID');
-        $this->dataset = 'UsuariosOPSA';
+        $this->projectId = BigQuery::projectId();
+        $this->dataset = BigQuery::dataset();
 
     }
 
@@ -116,7 +117,7 @@ class CityAliasRepository
     public function insert(array $data)
     {
         $table = $this->bq
-            ->dataset("UsuariosOPSA")
+            ->dataset($this->dataset)
             ->table($this->catalogoCiudades);
 
         $result = $table->insertRows([
@@ -210,7 +211,10 @@ class CityAliasRepository
         $query = "
             SELECT 1
             FROM {$this->tableRef()}
-            WHERE UPPER(TRIM(ciudad_alias)) = @alias
+            WHERE REGEXP_REPLACE(
+                REGEXP_REPLACE(NORMALIZE(UPPER(TRIM(ciudad_alias)), NFD), r'\\p{M}', ''),
+                r'[^A-Z0-9]', ''
+            ) = @alias
             LIMIT 1
         ";
 

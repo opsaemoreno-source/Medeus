@@ -2,23 +2,23 @@
 
 namespace App\Services;
 
+use App\Support\BigQuery;
 use Google\Cloud\BigQuery\BigQueryClient;
 
 class EncuestasService
 {
     protected BigQueryClient $bigQuery;
 
-    protected string $dataset = 'UsuariosOPSA';
-    protected string $tablaUsuarios = 'vta_usuariosEvolok';
-    protected string $tablaEncuestas = 'EncuestasTypeform';
-    protected string $tablaEncuestasDetalle = 'EncuestasTypeformDetalle';
+    protected string $tablaUsuarios;
+    protected string $tablaEncuestas;
+    protected string $tablaEncuestasDetalle;
 
     public function __construct()
     {
-        $this->bigQuery = new BigQueryClient([
-            'projectId' => env('GOOGLE_PROJECT_ID'),
-            'keyFilePath' => config('services.bigquery.key_path'),
-        ]);
+        $this->bigQuery = BigQuery::client();
+        $this->tablaUsuarios = BigQuery::table('vta_usuariosEvolok');
+        $this->tablaEncuestas = BigQuery::table('EncuestasTypeform');
+        $this->tablaEncuestasDetalle = BigQuery::table('EncuestasTypeformDetalle');
     }
 
     /**
@@ -26,6 +26,9 @@ class EncuestasService
      */
     public function kpis(?string $fechaInicio = null, ?string $fechaFin = null): array
     {
+        $fechaInicio = BigQuery::fecha($fechaInicio);
+        $fechaFin = BigQuery::fecha($fechaFin);
+
         // Filtro opcional de fecha
         $whereFecha = '';
         if ($fechaInicio && $fechaFin) {
@@ -39,7 +42,7 @@ class EncuestasService
                     d.token,
                     d.userid,
                     COUNT(DISTINCT d.idPregunta) AS respuestas_token
-                FROM `UsuariosOPSA.EncuestasTypeformDetalle` d
+                FROM {$this->tablaEncuestasDetalle} d
                 WHERE d.token IS NOT NULL
                 $whereFecha
                 GROUP BY d.idEncuesta, d.token, d.userid
@@ -47,7 +50,7 @@ class EncuestasService
 
             encuestas AS (
                 SELECT id, noCampos
-                FROM `UsuariosOPSA.EncuestasTypeform`
+                FROM {$this->tablaEncuestas}
             ),
 
             pct_por_token AS (
@@ -60,10 +63,12 @@ class EncuestasService
                     ON e.id = r.idEncuesta
             ),
 
+            -- Las respuestas anónimas se guardan con userid = 'GUEST';
+            -- se compara con UPPER para no depender de mayúsculas.
             usuarios_normalizados AS (
                 SELECT
                     CASE
-                        WHEN userid IS NOT NULL AND userid != 'Guest'
+                        WHEN userid IS NOT NULL AND UPPER(userid) != 'GUEST'
                             THEN userid
                         ELSE token
                     END AS usuario_unico,
@@ -74,10 +79,10 @@ class EncuestasService
             )
 
             SELECT
-                COUNT(DISTINCT IF(userid IS NOT NULL AND userid != 'Guest', userid, NULL))
+                COUNT(DISTINCT IF(userid IS NOT NULL AND UPPER(userid) != 'GUEST', userid, NULL))
                     AS usuarios_registrados,
 
-                COUNT(DISTINCT IF(userid = 'Guest' OR userid IS NULL, token, NULL))
+                COUNT(DISTINCT IF(UPPER(userid) = 'GUEST' OR userid IS NULL, token, NULL))
                     AS usuarios_no_registrados,
 
                 COUNT(DISTINCT usuario_unico)
@@ -104,6 +109,10 @@ class EncuestasService
      */
     public function demografia(string $campo, ?string $fechaInicio = null, ?string $fechaFin = null): array
     {
+        $campo = BigQuery::columna($campo);
+        $fechaInicio = BigQuery::fecha($fechaInicio);
+        $fechaFin = BigQuery::fecha($fechaFin);
+
         $whereFecha = '';
         if ($fechaInicio && $fechaFin) {
             $whereFecha = "AND d.fechaFin BETWEEN '$fechaInicio 00:00:00' AND '$fechaFin 23:59:59'";
@@ -128,7 +137,7 @@ class EncuestasService
                 )
             ";
             $joinExtra = "
-                LEFT JOIN `{$this->dataset}.vta_ciudadesNormalizadas` c
+                LEFT JOIN " . BigQuery::table('vta_ciudadesNormalizadas') . " c
                     ON REGEXP_REPLACE(
                         REGEXP_REPLACE(
                             NORMALIZE(UPPER(u.ciudad), NFD),
@@ -151,7 +160,7 @@ class EncuestasService
             ";
 
             $joinExtra = "
-                LEFT JOIN `{$this->dataset}.data_paises` dp
+                LEFT JOIN " . BigQuery::table('data_paises') . " dp
                     ON dp.idPaisAlter = u.pais
             ";
             $setLimit = "LIMIT 10";
@@ -162,7 +171,7 @@ class EncuestasService
                 COALESCE(dne.label, u.nivelEducativo, 'Sin datos')
             ";
             $joinExtra = "
-            LEFT JOIN `{$this->dataset}.data_nivelEducativo` dne
+            LEFT JOIN " . BigQuery::table('data_nivelEducativo') . " dne
                 ON dne.idNivEducativo = u.nivelEducativo
             ";
         }else {
@@ -178,8 +187,8 @@ class EncuestasService
             SELECT
                 $categoriaSql AS categoria,
                 COUNT(DISTINCT u.userid) AS total
-            FROM `{$this->dataset}.{$this->tablaEncuestasDetalle}` d
-            INNER JOIN `{$this->dataset}.{$this->tablaUsuarios}` u
+            FROM {$this->tablaEncuestasDetalle} d
+            INNER JOIN {$this->tablaUsuarios} u
                 ON u.userid = d.userid
             $joinExtra
             WHERE d.userid IS NOT NULL

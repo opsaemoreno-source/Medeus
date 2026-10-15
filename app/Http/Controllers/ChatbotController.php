@@ -277,6 +277,8 @@ class ChatbotController extends Controller
             'validation_prompt' => $version->validation_prompt,
         ]);
 
+        app(ChatbotSyncService::class)->sync($topic);
+
         return to_route('chatbot.edit', $topic)
             ->with(
                 'success',

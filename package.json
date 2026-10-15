@@ -3,8 +3,9 @@
     "private": true,
     "type": "module",
     "scripts": {
-        "build": "echo 'No build needed'",
-        "dev": "npm run watch-css"
+        "dev": "mix --mix-config=webpack.mix.cjs",
+        "watch": "mix watch --mix-config=webpack.mix.cjs",
+        "build": "mix --production --mix-config=webpack.mix.cjs"
     },
     "devDependencies": {
         "alpinejs": "^3.4.2",

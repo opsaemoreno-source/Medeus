@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Support\BigQuery;
 use Google\Cloud\BigQuery\BigQueryClient;
 
 class EstadisticasAvanzadasService
@@ -18,125 +19,33 @@ class EstadisticasAvanzadasService
     protected string $tablaProfesiones;
     protected string $tablaNivEducativo;
     protected string $tablaPaises;
+    protected string $tablaEstadoCivil;
 
     public function __construct()
     {
-        $this->bigQuery = new BigQueryClient([
-            'projectId' => env('GOOGLE_PROJECT_ID'),
-            'keyFilePath' => config('services.bigquery.key_path')
-        ]);
+        $this->bigQuery = BigQuery::client();
 
         $this->segmentador = new UsuariosSegmentacionService();
 
-        $this->tablaUsuarios = "`admanagerapiaccess-382213.UsuariosOPSA.vta_usuariosEvolok`";
-        $this->tablaCompras = "`admanagerapiaccess-382213.UsuariosOPSA.Compras`";
-        $this->tablaEncuestas = "`admanagerapiaccess-382213.UsuariosOPSA.EncuestasTypeform`";
-        $this->tablaProfesiones = "`admanagerapiaccess-382213.UsuariosOPSA.data_profesion`";
-        $this->tablaNivEducativo = "`admanagerapiaccess-382213.UsuariosOPSA.data_nivelEducativo`";
-        $this->tablaPaises = "`admanagerapiaccess-382213.UsuariosOPSA.data_paises`";
-        $this->tablaEncuestasDetalle = "`admanagerapiaccess-382213.UsuariosOPSA.EncuestasTypeformDetalle`";
-        $this->catalogoCiudades = "`admanagerapiaccess-382213.UsuariosOPSA.catalogo_ciudadesNormalizacion`";
-        $this->vtaCiudadesNormalizadas = "`admanagerapiaccess-382213.UsuariosOPSA.vta_ciudadesNormalizadas`";
-        
+        $this->tablaUsuarios = BigQuery::table('vta_usuariosEvolok');
+        $this->tablaCompras = BigQuery::table('Compras');
+        $this->tablaEncuestas = BigQuery::table('EncuestasTypeform');
+        $this->tablaProfesiones = BigQuery::table('data_profesion');
+        $this->tablaNivEducativo = BigQuery::table('data_nivelEducativo');
+        $this->tablaPaises = BigQuery::table('data_paises');
+        $this->tablaEstadoCivil = BigQuery::table('data_estadoCivil');
+        $this->tablaEncuestasDetalle = BigQuery::table('EncuestasTypeformDetalle');
+        $this->catalogoCiudades = BigQuery::table('catalogo_ciudadesNormalizacion');
+        $this->vtaCiudadesNormalizadas = BigQuery::table('vta_ciudadesNormalizadas');
     }
 
-    /**
-     * Construye dinámicamente el WHERE a partir de filtros demográficos
-     */
-    /*private function buildWhere(array $filtros): string
-    {
-        $where = [];
-
-        if (!empty($filtros['fecha_inicio']) && !empty($filtros['fecha_fin'])) {
-            $where[] = "u.fechaCreacion >= DATETIME('{$filtros['fecha_inicio']}')
-                    AND u.fechaCreacion < DATETIME('{$filtros['fecha_fin']}') + INTERVAL 1 DAY";
-        }
-
-        // Dentro de buildWhere()
-        if (!empty($filtros['respondieronEncuesta'])) {
-            // Solo usuarios que tienen registro en EncuestasTypeformDetalle
-            $where[] = "u.userid IN (SELECT userid FROM {$this->tablaEncuestasDetalle})";
-        }
-
-
-        foreach (['marca','genero','estadoCivil','nivelEducativo','profesion','pais','canal'] as $campo)
-        {
-            if (!empty($filtros[$campo])) {
-                $valor = $this->esc($filtros[$campo]);
-                $where[] = "u.$campo = '$valor'";
-            }
-        }
-
-        if (!empty($filtros['ciudad'])) {
-            $valor = strtoupper(trim($filtros['ciudad']));
-
-            $valorNorm = "
-                REGEXP_REPLACE(
-                    REGEXP_REPLACE(
-                        NORMALIZE('$valor', NFD),
-                        r'\\p{M}',
-                        ''
-                    ),
-                    r'[^A-Z0-9]',
-                    ''
-                )
-            ";
-
-            $where[] = "
-                REGEXP_REPLACE(
-                    REGEXP_REPLACE(
-                        NORMALIZE(UPPER(u.ciudad), NFD),
-                        r'\\p{M}',
-                        ''
-                    ),
-                    r'[^A-Z0-9]',
-                    ''
-                ) LIKE CONCAT('%', $valorNorm, '%')
-            ";
-        }
-
-        if (!empty($filtros['edad_min'])) {
-            $refDate = !empty($filtros['fecha_fin'])
-                ? "DATE('{$filtros['fecha_fin']}')"
-                : "CURRENT_DATE()";
-
-            if (!empty($filtros['edad_max'])) {
-                $where[] = "
-                    DATE_DIFF($refDate, DATE(u.fechaNacimiento), YEAR)
-                    BETWEEN {$filtros['edad_min']} AND {$filtros['edad_max']}
-                ";
-            } else {
-                $where[] = "
-                    DATE_DIFF($refDate, DATE(u.fechaNacimiento), YEAR)
-                    >= {$filtros['edad_min']}
-                ";
-            }
-        }
-
-        return count($where) ? 'WHERE ' . implode(' AND ', $where) : '';
-    }*/
-
-    /*private function buildAndWhere(array $filtros): string
-    {
-        $where = $this->segmentador->buildWhere($filtros);
-
-        return $where
-            ? str_replace('WHERE', 'AND', $where)
-            : '';
-    }*/
-
-
-    private function esc($value): string
-    {
-        return addslashes(trim($value));
-    }
-    
     /**
      * Cantidad de usuarios registrados que han contestado encuestas
      */
     public function usuariosQueRespondieronEncuestas(array $filtros = []): int
     {
-        $where = $this->segmentador->buildWhere($filtros);
+        $params = [];
+        $where = $this->segmentador->buildWhere($filtros, $params);
 
         $query = "
             SELECT
@@ -147,7 +56,7 @@ class EstadisticasAvanzadasService
             $where
         ";
 
-        $row = $this->runQuerySingleRow($query);
+        $row = $this->runQuerySingleRow($query, $params);
 
         return (int) ($row['total'] ?? 0);
     }
@@ -158,7 +67,8 @@ class EstadisticasAvanzadasService
      */
     public function usuariosConCompraYEncuesta(array $filtros = []): array
     {
-        $where = $this->segmentador->buildWhere($filtros);
+        $params = [];
+        $where = $this->segmentador->buildWhere($filtros, $params);
 
         $query = "
             SELECT
@@ -171,7 +81,7 @@ class EstadisticasAvanzadasService
             $where
         ";
 
-        return $this->runQuerySingleRow($query);
+        return $this->runQuerySingleRow($query, $params);
     }
 
     /**
@@ -179,7 +89,8 @@ class EstadisticasAvanzadasService
      */
     public function conversionEncuestaCompra(array $filtros = []): array
     {
-        $where = $this->segmentador->buildWhere($filtros);
+        $params = [];
+        $where = $this->segmentador->buildWhere($filtros, $params);
 
         $query = "
             SELECT
@@ -192,7 +103,7 @@ class EstadisticasAvanzadasService
             $where
         ";
 
-        return $this->runQuerySingleRow($query);
+        return $this->runQuerySingleRow($query, $params);
     }
 
     /**
@@ -200,7 +111,8 @@ class EstadisticasAvanzadasService
      */
     public function comprasPorRespuesta(array $filtros = [], int $topN = 20): array
     {
-        $where = $this->segmentador->buildWhere($filtros);
+        $params = [];
+        $where = $this->segmentador->buildWhere($filtros, $params);
 
         $query = "
             SELECT
@@ -216,16 +128,15 @@ class EstadisticasAvanzadasService
             LIMIT $topN
         ";
 
-        return $this->runQueryMultipleRows($query);
+        return $this->runQueryMultipleRows($query, $params);
     }
 
     /**
      * Ejecuta una query que devuelve una fila
      */
-    private function runQuerySingleRow(string $query): array
+    private function runQuerySingleRow(string $query, array $params = []): array
     {
-        $queryJob = $this->bigQuery->query($query);
-        $results = $this->bigQuery->runQuery($queryJob);
+        $results = BigQuery::run($this->bigQuery, $query, $params);
 
         foreach ($results->rows() as $row) {
             $arrayRow = [];
@@ -243,10 +154,9 @@ class EstadisticasAvanzadasService
     /**
      * Ejecuta una query que devuelve múltiples filas
      */
-    private function runQueryMultipleRows(string $query): array
+    private function runQueryMultipleRows(string $query, array $params = []): array
     {
-        $queryJob = $this->bigQuery->query($query);
-        $results = $this->bigQuery->runQuery($queryJob);
+        $results = BigQuery::run($this->bigQuery, $query, $params);
 
         $data = [];
         foreach ($results->rows() as $row) {
@@ -266,7 +176,9 @@ class EstadisticasAvanzadasService
      */
     public function valoresDistintos(string $columna, array $filtros = []): array
     {
-        $where = $this->segmentador->buildWhere($filtros);
+        $columna = BigQuery::columna($columna);
+        $params = [];
+        $where = $this->segmentador->buildWhere($filtros, $params);
 
         $query = "
             SELECT DISTINCT $columna
@@ -275,14 +187,15 @@ class EstadisticasAvanzadasService
             ORDER BY $columna
         ";
 
-        $result = $this->runQueryMultipleRows($query);
+        $result = $this->runQueryMultipleRows($query, $params);
 
         return array_map(fn($r) => $r[$columna] ?? null, $result);
     }
 
     public function suscripcionesCompradas(array $filtros): array
     {
-        $where = $this->segmentador->buildAndWhere($filtros);
+        $params = [];
+        $where = $this->segmentador->buildAndWhere($filtros, $params);
 
         $sql = "
             SELECT
@@ -307,12 +220,13 @@ class EstadisticasAvanzadasService
                 {$where}
         ";
 
-        return $this->runQuerySingleRow($sql);
+        return $this->runQuerySingleRow($sql, $params);
     }
 
     public function topPaisesPerfil(array $filtros): array
     {
-        $where = $this->segmentador->buildAndWhere($filtros);
+        $params = [];
+        $where = $this->segmentador->buildAndWhere($filtros, $params);
 
         $sql = "
             SELECT
@@ -329,12 +243,13 @@ class EstadisticasAvanzadasService
             LIMIT 10
         ";
 
-        return $this->runQueryMultipleRows($sql);
+        return $this->runQueryMultipleRows($sql, $params);
     }
 
     public function topPaisesIP(array $filtros): array
     {
-        $where = $this->segmentador->buildAndWhere($filtros);
+        $params = [];
+        $where = $this->segmentador->buildAndWhere($filtros, $params);
 
         $sql = "
             SELECT
@@ -351,12 +266,13 @@ class EstadisticasAvanzadasService
             LIMIT 10
         ";
 
-        return $this->runQueryMultipleRows($sql);
+        return $this->runQueryMultipleRows($sql, $params);
     }
 
     public function topCiudades(array $filtros): array
     {
-        $where = $this->segmentador->buildAndWhere($filtros);
+        $params = [];
+        $where = $this->segmentador->buildAndWhere($filtros, $params);
 
         $sql = "
             SELECT
@@ -383,12 +299,13 @@ class EstadisticasAvanzadasService
             LIMIT 10
         ";
 
-        return $this->runQueryMultipleRows($sql);
+        return $this->runQueryMultipleRows($sql, $params);
     }
 
     public function topProfesiones(array $filtros): array
     {
-        $where = $this->segmentador->buildAndWhere($filtros);
+        $params = [];
+        $where = $this->segmentador->buildAndWhere($filtros, $params);
 
         $sql = "
             SELECT
@@ -405,12 +322,13 @@ class EstadisticasAvanzadasService
             LIMIT 10
         ";
 
-        return $this->runQueryMultipleRows($sql);
+        return $this->runQueryMultipleRows($sql, $params);
     }
 
     public function topNivelesEducativos(array $filtros): array
     {
-        $where = $this->segmentador->buildAndWhere($filtros);
+        $params = [];
+        $where = $this->segmentador->buildAndWhere($filtros, $params);
 
         $sql = "
             SELECT
@@ -427,14 +345,14 @@ class EstadisticasAvanzadasService
             LIMIT 10
         ";
 
-        return $this->runQueryMultipleRows($sql);
+        return $this->runQueryMultipleRows($sql, $params);
     }
 
     public function catalogoEstadoCivil(): array
     {
         $sql = "
             SELECT idCivil AS id, label
-            FROM `admanagerapiaccess-382213.UsuariosOPSA.data_estadoCivil`
+            FROM {$this->tablaEstadoCivil}
             ORDER BY label
         ";
         return $this->runQueryMultipleRows($sql);

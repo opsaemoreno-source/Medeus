@@ -2,28 +2,30 @@
 
 namespace App\Services;
 
-use Google\Cloud\BigQuery\BigQueryClient;
+use App\Support\BigQuery;
 use Exception; 
 
 class ComprasService
 {
     protected $bigQuery;
-    protected string $datasetId = 'admanagerapiaccess-382213.UsuariosOPSA';
-    protected string $tableCompras   = 'vta_Compras';
-    protected string $viewComprasActual   = 'vta_Compras';
-    protected string $viewComprasHistorico = 'vta_ComprasHistorico';
+    protected string $tableCompras;
+    protected string $viewComprasActual;
+    protected string $viewComprasHistorico;
+    protected string $tablaUsuarios;
 
     public function __construct()
     {
-        $this->bigQuery = new BigQueryClient([
-            'projectId' => env('GOOGLE_PROJECT_ID'),
-            'keyFilePath' => config('services.bigquery.key_path')
-        ]);
+        $this->bigQuery = BigQuery::client();
+        $this->tableCompras = BigQuery::table('vta_Compras');
+        $this->viewComprasActual = BigQuery::table('vta_Compras');
+        $this->viewComprasHistorico = BigQuery::table('vta_ComprasHistorico');
+        $this->tablaUsuarios = BigQuery::table('vta_usuariosEvolok');
     }
 
     public function obtenerCompras(array $filtros): array
     {
-        $where = $this->buildWhere($filtros);
+        $params = [];
+        $where = $this->buildWhere($filtros, $params);
 
         $sql = "
             SELECT
@@ -46,15 +48,14 @@ class ComprasService
                 u.nombre                AS usuarioNombre,
                 u.apellido              AS usuarioApellido,
                 u.correo                AS usuarioCorreo
-            FROM `{$this->datasetId}.{$this->tableCompras}` AS c
-            LEFT JOIN `{$this->datasetId}.vta_usuariosEvolok` u
+            FROM {$this->tableCompras} AS c
+            LEFT JOIN {$this->tablaUsuarios} u
                 ON c.idUsuario = u.userid
             $where
             ORDER BY c.fechaInicioSuscripcion DESC
         ";
 
-        $query = $this->bigQuery->query($sql);
-        $rows  = iterator_to_array($this->bigQuery->runQuery($query));
+        $rows  = iterator_to_array(BigQuery::run($this->bigQuery, $sql, $params));
 
         return [
             'data' => $this->mapCompras($rows),
@@ -135,7 +136,7 @@ class ComprasService
         return $value;
     }
 
-    protected function addInCondition(array &$conditions, string $column, $value): void
+    protected function addInCondition(array &$conditions, array &$params, string $column, string $param, $value): void
     {
         $values = array_filter((array) $value, fn($v) => $v !== null && $v !== '');
 
@@ -143,14 +144,11 @@ class ComprasService
             return;
         }
 
-        $valuesSQL = implode(
-            ', ',
-            array_map(fn($v) => "'" . addslashes($v) . "'", $values)
-        );
-        $conditions[] = "$column IN ($valuesSQL)";
+        $params[$param] = array_values(array_map('strval', $values));
+        $conditions[] = "$column IN UNNEST(@$param)";
     }
 
-    protected function buildWhere(array $filtros): string
+    protected function buildWhere(array $filtros, array &$params = []): string
     {
         $conditions = [];
 
@@ -163,51 +161,51 @@ class ComprasService
                 $estados = array_filter($filtros['estado']);
 
                 if (count($estados)) {
-                    $estadosSQL = implode(
-                        ', ',
-                        array_map(fn($e) => "'" . addslashes($e) . "'", $estados)
-                    );
-                    $conditions[] = "c.estado IN ($estadosSQL)";
+                    $params['estado'] = array_values(array_map('strval', $estados));
+                    $conditions[] = "c.estado IN UNNEST(@estado)";
                 }
 
             } else {
-                $conditions[] = "c.estado = '" . addslashes($filtros['estado']) . "'";
+                $params['estado'] = (string) $filtros['estado'];
+                $conditions[] = "c.estado = @estado";
             }
         }
 
         // =========================
         // MARCA / CANAL / TIPO PAGO (uno o varios)
         // =========================
-        $this->addInCondition($conditions, 'TRIM(LOWER(c.marca))', $filtros['marca'] ?? null);
-        $this->addInCondition($conditions, 'c.canal', $filtros['canal'] ?? null);
-        $this->addInCondition($conditions, 'c.tipoPago', $filtros['tipoPago'] ?? null);
+        $this->addInCondition($conditions, $params, 'TRIM(LOWER(c.marca))', 'marca', $filtros['marca'] ?? null);
+        $this->addInCondition($conditions, $params, 'c.canal', 'canal', $filtros['canal'] ?? null);
+        $this->addInCondition($conditions, $params, 'c.tipoPago', 'tipoPago', $filtros['tipoPago'] ?? null);
 
         // =========================
         // RESTO DE FILTROS (sin cambios)
         // =========================
 
         if (!empty($filtros['producto'])) {
-            $conditions[] = "c.nombreProductoDisplay = '{$filtros['producto']}'";
+            $params['producto'] = (string) $filtros['producto'];
+            $conditions[] = "c.nombreProductoDisplay = @producto";
         }
 
         if (!empty($filtros['plan'])) {
-            $conditions[] = "c.nombrePlanPagoDisplay = '{$filtros['plan']}'";
+            $params['plan'] = (string) $filtros['plan'];
+            $conditions[] = "c.nombrePlanPagoDisplay = @plan";
         }
 
         if (!empty($filtros['search'])) {
-            $search = addslashes($filtros['search']);
+            $params['search'] = (string) $filtros['search'];
             $conditions[] = "(
-                CAST(c.idUsuario AS STRING) LIKE '%$search%' 
-                OR CAST(c.idCompra AS STRING) LIKE '%$search%'
+                CAST(c.idUsuario AS STRING) LIKE CONCAT('%', @search, '%')
+                OR CAST(c.idCompra AS STRING) LIKE CONCAT('%', @search, '%')
             )";
         }
 
-        if (!empty($filtros['fechaInicio'])) {
-            $conditions[] = "c.fechaInicioSuscripcion >= '{$filtros['fechaInicio']} 00:00:00'";
+        if ($fechaInicio = BigQuery::fecha($filtros['fechaInicio'] ?? null)) {
+            $conditions[] = "c.fechaInicioSuscripcion >= '{$fechaInicio} 00:00:00'";
         }
 
-        if (!empty($filtros['fechaFin'])) {
-            $conditions[] = "c.fechaInicioSuscripcion <= '{$filtros['fechaFin']} 23:59:59'";
+        if ($fechaFin = BigQuery::fecha($filtros['fechaFin'] ?? null)) {
+            $conditions[] = "c.fechaInicioSuscripcion <= '{$fechaFin} 23:59:59'";
         }
 
         return count($conditions)
@@ -217,7 +215,8 @@ class ComprasService
 
     public function obtenerEstadisticasCompras(array $filtros): array
     {
-        $where = $this->buildWhere($filtros);
+        $params = [];
+        $where = $this->buildWhere($filtros, $params);
 
         $sql = "
             SELECT
@@ -232,14 +231,13 @@ class ComprasService
                 COUNT(*) AS cantidad,
                 SUM(IFNULL(precioFinal, 0)) AS valor
 
-            FROM `{$this->datasetId}.{$this->tableCompras}`
+            FROM {$this->tableCompras} AS c
             $where
             GROUP BY idMoneda, dia, producto, estado, marca, canal, idFrecuencia
             ORDER BY dia ASC
         ";
 
-        $query = $this->bigQuery->query($sql);
-        $rows  = iterator_to_array($this->bigQuery->runQuery($query));
+        $rows  = iterator_to_array(BigQuery::run($this->bigQuery, $sql, $params));
 
         return $this->mapEstadisticasCompras($rows);
     }
@@ -248,7 +246,8 @@ class ComprasService
     {
         // FORZAR solo ACTIVE
         $filtros['estado'] = 'ACTIVE';
-        $where = $this->buildWhere($filtros);
+        $params = [];
+        $where = $this->buildWhere($filtros, $params);
 
         $sql = "
             SELECT
@@ -263,14 +262,13 @@ class ComprasService
                 COUNT(*) AS cantidad,
                 SUM(IFNULL(precioFinal, 0)) AS valor
 
-            FROM `{$this->datasetId}.{$this->tableCompras}`
+            FROM {$this->tableCompras} AS c
             $where
             GROUP BY idMoneda, dia, producto, estado, marca, canal, idFrecuencia
             ORDER BY dia ASC
         ";
 
-        $query = $this->bigQuery->query($sql);
-        $rows  = iterator_to_array($this->bigQuery->runQuery($query));
+        $rows  = iterator_to_array(BigQuery::run($this->bigQuery, $sql, $params));
 
         return $this->mapEstadisticasCompras($rows);
     }
@@ -355,7 +353,7 @@ class ComprasService
                     CAST(precioFinal AS FLOAT64) * 
                     CAST(cantidad AS FLOAT64)
                 ) AS total
-            FROM `{$this->datasetId}.{$this->viewComprasHistorico}`
+            FROM {$this->viewComprasHistorico}
             WHERE estado = 'ACTIVE'
             GROUP BY idMoneda;
         ";

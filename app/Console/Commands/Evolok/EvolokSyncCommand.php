@@ -2,6 +2,7 @@
 
 namespace App\Console\Commands\Evolok;
 
+use App\Support\BigQuery;
 use Google\Cloud\BigQuery\BigQueryClient;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
@@ -10,10 +11,7 @@ abstract class EvolokSyncCommand extends Command
 {
     protected function bigQuery(): BigQueryClient
     {
-        return new BigQueryClient([
-            'projectId' => env('GOOGLE_PROJECT_ID'),
-            'keyFilePath' => config('services.bigquery.key_path'),
-        ]);
+        return BigQuery::client();
     }
 
     protected function insertRows(string $tableId, array $rows): void
@@ -24,7 +22,7 @@ abstract class EvolokSyncCommand extends Command
             return;
         }
 
-        $dataset = $this->bigQuery()->dataset('UsuariosOPSA');
+        $dataset = $this->bigQuery()->dataset(BigQuery::dataset());
         $table = $dataset->table($tableId);
 
         $rowsToInsert = array_map(fn ($row) => ['data' => $row], $rows);

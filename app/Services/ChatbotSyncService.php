@@ -14,9 +14,9 @@ class ChatbotSyncService
         try {
             $response = Http::timeout(30)
                 ->withHeaders([
-                    'X-API-KEY' => env('CHATBOT_API_KEY')
+                    'X-API-KEY' => config('services.chatbot.key')
                 ])
-                ->post(env('CHATBOT_API_URL') . '/admin/sync-topic', [
+                ->post(config('services.chatbot.url') . '/admin/sync-topic', [
                     'slug' => $topic->slug,
                     'active' => $topic->active,
                     'config_json' => $topic->config_json,
@@ -88,10 +88,10 @@ class ChatbotSyncService
         try {
             $response = Http::timeout(30)
                 ->withHeaders([
-                    'X-API-KEY' => env('CHATBOT_API_KEY')
+                    'X-API-KEY' => config('services.chatbot.key')
                 ])
                 ->post(
-                    env('CHATBOT_API_URL')
+                    config('services.chatbot.url')
                     . '/admin/deactivate-topic/'
                     . $topic->slug
                 );

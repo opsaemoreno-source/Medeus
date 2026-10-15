@@ -2,47 +2,31 @@
 
 namespace App\Services;
 
-use Google\Cloud\BigQuery\BigQueryClient;
+use App\Support\BigQuery;
 
 class UsuariosSegmentacionService
 {
-    protected BigQueryClient $bigQuery;
-    protected string $tablaUsuarios;
-    protected string $tablaCompras;
-    protected string $tablaEncuestas;
     protected string $tablaEncuestasDetalle;
-    protected string $catalogoCiudades;
-    protected string $vtaUsuariosNormalizados;
-    protected string $vtaCiudadesNormalizadas;
-    protected string $tablaProfesiones;
-    protected string $tablaNivEducativo;
-    protected string $tablaPaises;
 
     public function __construct()
     {
-        $this->bigQuery = new BigQueryClient([
-            'projectId' => env('GOOGLE_PROJECT_ID'),
-            'keyFilePath' => config('services.bigquery.key_path')
-        ]);        
-
-        $this->tablaUsuarios = "`admanagerapiaccess-382213.UsuariosOPSA.vta_usuariosEvolok`";
-        $this->tablaCompras = "`admanagerapiaccess-382213.UsuariosOPSA.Compras`";
-        $this->tablaEncuestas = "`admanagerapiaccess-382213.UsuariosOPSA.EncuestasTypeform`";
-        $this->tablaProfesiones = "`admanagerapiaccess-382213.UsuariosOPSA.data_profesion`";
-        $this->tablaNivEducativo = "`admanagerapiaccess-382213.UsuariosOPSA.data_nivelEducativo`";
-        $this->tablaPaises = "`admanagerapiaccess-382213.UsuariosOPSA.data_paises`";
-        $this->tablaEncuestasDetalle = "`admanagerapiaccess-382213.UsuariosOPSA.EncuestasTypeformDetalle`";
-        $this->catalogoCiudades = "`admanagerapiaccess-382213.UsuariosOPSA.catalogo_ciudadesNormalizacion`";
-        $this->vtaCiudadesNormalizadas = "`admanagerapiaccess-382213.UsuariosOPSA.vta_ciudadesNormalizadas`";
+        $this->tablaEncuestasDetalle = BigQuery::table('EncuestasTypeformDetalle');
     }
 
-    public function buildWhere(array $filtros): string
+    /**
+     * Construye el WHERE a partir de filtros demográficos. Los valores se
+     * agregan a $params para ejecutarse como parámetros de BigQuery.
+     */
+    public function buildWhere(array $filtros, array &$params = []): string
     {
         $where = [];
 
-        if (!empty($filtros['fecha_inicio']) && !empty($filtros['fecha_fin'])) {
-            $where[] = "u.fechaCreacion >= DATETIME('{$filtros['fecha_inicio']}')
-                    AND u.fechaCreacion < DATETIME('{$filtros['fecha_fin']}') + INTERVAL 1 DAY";
+        $fechaInicio = BigQuery::fecha($filtros['fecha_inicio'] ?? null);
+        $fechaFin = BigQuery::fecha($filtros['fecha_fin'] ?? null);
+
+        if ($fechaInicio && $fechaFin) {
+            $where[] = "u.fechaCreacion >= DATETIME('{$fechaInicio}')
+                    AND u.fechaCreacion < DATETIME('{$fechaFin}') + INTERVAL 1 DAY";
         }
 
         // Dentro de buildWhere()
@@ -54,19 +38,19 @@ class UsuariosSegmentacionService
 
         foreach (['marca','genero','estadoCivil','nivelEducativo','profesion','pais','canal'] as $campo)
         {
-            if (!empty($filtros[$campo])) {
-                $valor = $this->esc($filtros[$campo]);
-                $where[] = "u.$campo = '$valor'";
+            if (!empty($filtros[$campo]) && is_scalar($filtros[$campo])) {
+                $params["seg_$campo"] = trim((string) $filtros[$campo]);
+                $where[] = "u.$campo = @seg_$campo";
             }
         }
 
-        if (!empty($filtros['ciudad'])) {
-            $valor = strtoupper(trim($filtros['ciudad']));
+        if (!empty($filtros['ciudad']) && is_scalar($filtros['ciudad'])) {
+            $params['seg_ciudad'] = strtoupper(trim((string) $filtros['ciudad']));
 
             $valorNorm = "
                 REGEXP_REPLACE(
                     REGEXP_REPLACE(
-                        NORMALIZE('$valor', NFD),
+                        NORMALIZE(@seg_ciudad, NFD),
                         r'\\p{M}',
                         ''
                     ),
@@ -89,19 +73,22 @@ class UsuariosSegmentacionService
         }
 
         if (!empty($filtros['edad_min'])) {
-            $refDate = !empty($filtros['fecha_fin'])
-                ? "DATE('{$filtros['fecha_fin']}')"
+            $refDate = $fechaFin
+                ? "DATE('{$fechaFin}')"
                 : "CURRENT_DATE()";
 
+            $params['seg_edad_min'] = (int) $filtros['edad_min'];
+
             if (!empty($filtros['edad_max'])) {
+                $params['seg_edad_max'] = (int) $filtros['edad_max'];
                 $where[] = "
                     DATE_DIFF($refDate, DATE(u.fechaNacimiento), YEAR)
-                    BETWEEN {$filtros['edad_min']} AND {$filtros['edad_max']}
+                    BETWEEN @seg_edad_min AND @seg_edad_max
                 ";
             } else {
                 $where[] = "
                     DATE_DIFF($refDate, DATE(u.fechaNacimiento), YEAR)
-                    >= {$filtros['edad_min']}
+                    >= @seg_edad_min
                 ";
             }
         }
@@ -109,17 +96,12 @@ class UsuariosSegmentacionService
         return count($where) ? 'WHERE ' . implode(' AND ', $where) : '';
     }
 
-    public function buildAndWhere(array $filtros): string
+    public function buildAndWhere(array $filtros, array &$params = []): string
     {
-        $where = $this->buildWhere($filtros);
+        $where = $this->buildWhere($filtros, $params);
 
         return $where
-            ? str_replace('WHERE', 'AND', $where)
+            ? preg_replace('/^WHERE /', 'AND ', $where)
             : '';
-    }
-
-    private function esc($value): string
-    {
-        return addslashes(trim($value));
     }
 }
