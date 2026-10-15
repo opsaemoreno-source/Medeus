@@ -480,13 +480,14 @@ Los servicios obtienen el `BigQueryClient` compartido (registrado en [AppService
 
 ### Pendiente
 
-- **Adminer y dump de BD en el repositorio:** `public/adminer.php`, `public/adminer.5.4.1.php`, `MaDeUsDB` y `MaDeUsDB.sqlite.sql` ya están en `.gitignore`, pero siguen versionados. Hay que sacarlos del índice (`git rm public/adminer*.php` y `git rm --cached MaDeUsDB MaDeUsDB.sqlite.sql`). **Antes de hacer `git pull` de ese commit en un servidor que use `MaDeUsDB` como base de datos, respaldarla:** git borra del disco los archivos que un commit deja de versionar. El hash de contraseña que quedó en el historial debe considerarse expuesto (cambiar esa contraseña).
-- **`sync_status` y `sync_error` no están en `$fillable`** de `ChatbotTopic`, así que `update()` los descarta en silencio y el estado de sincronización no se guarda.
-- **`ComprasController::data`** llama dos veces a `obtenerCompras` (dos consultas iguales a BigQuery por petición).
-- **Normalización de ciudades:** el filtro `ciudad` de la segmentación usa `strtoupper` (no multibyte), así que una ciudad escrita con tilde en minúscula pierde esa letra al compararse.
+- **Historial de git:** `MaDeUsDB` y `MaDeUsDB.sqlite.sql` ya no se versionan, pero siguen en commits anteriores con un usuario, su hash de contraseña y una sesión. Conviene cambiar esa contraseña si se usa en algún entorno.
 
 ### Resuelto
 
+- `public/adminer.php` y `public/adminer.5.4.1.php` se eliminaron del repositorio; `MaDeUsDB` y `MaDeUsDB.sqlite.sql` dejaron de versionarse. Los cuatro están en `.gitignore`. Producción usa MySQL, así que quitar `MaDeUsDB` no la afecta.
+- `sync_status` y `sync_error` están en `$fillable` de `ChatbotTopic`, así que el resultado de cada sincronización con la API del chatbot se guarda.
+- `ComprasController::data` consulta las compras una sola vez por petición.
+- El filtro `ciudad` de la segmentación usa `mb_strtoupper`, así que las letras con tilde se comparan igual que en `UPPER(u.ciudad)`.
 - `GET /suscriptores/data` exige sesión (`auth`).
 - Las consultas a BigQuery usan parámetros nombrados para los valores de la petición; las fechas se validan antes de usarse y los nombres de columna dinámicos se validan como identificadores.
 - `Route::resource('users')` queda solo en `routes/auth.php` (`auth` + `admin`). También se quitó la ruta `/estadisticas` duplicada en `routes/web.php`.

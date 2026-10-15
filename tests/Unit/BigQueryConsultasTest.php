@@ -87,7 +87,7 @@ class BigQueryConsultasTest extends TestCase
             'fecha_inicio' => '2026-01-01',
             'fecha_fin' => '2026-01-31',
             'genero' => ' ' . self::INYECCION,
-            'ciudad' => 'tegucigalpa',
+            'ciudad' => ' comayagüela ',
             'edad_min' => '18',
             'edad_max' => '30',
         ], $params);
@@ -98,7 +98,7 @@ class BigQueryConsultasTest extends TestCase
         $this->assertStringContainsString('BETWEEN @seg_edad_min AND @seg_edad_max', $where);
         $this->assertStringContainsString("DATE('2026-01-31')", $where);
         $this->assertSame(self::INYECCION, $params['seg_genero']);
-        $this->assertSame('TEGUCIGALPA', $params['seg_ciudad']);
+        $this->assertSame('COMAYAGÜELA', $params['seg_ciudad']);
         $this->assertSame(18, $params['seg_edad_min']);
         $this->assertSame(30, $params['seg_edad_max']);
     }

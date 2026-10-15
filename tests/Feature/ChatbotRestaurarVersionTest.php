@@ -41,7 +41,11 @@ class ChatbotRestaurarVersionTest extends TestCase
             ->post(route('chatbot.restore-version', [$topic, $version]))
             ->assertRedirect(route('chatbot.edit', $topic));
 
-        $this->assertSame('prompt anterior', $topic->fresh()->analysis_prompt);
+        $topic->refresh();
+        $this->assertSame('prompt anterior', $topic->analysis_prompt);
+        $this->assertSame('synced', $topic->sync_status);
+        $this->assertNull($topic->sync_error);
+        $this->assertNotNull($topic->synced_at);
 
         Http::assertSent(fn (Request $request) =>
             $request->url() === 'https://chatbot.test/admin/sync-topic'
@@ -49,5 +53,21 @@ class ChatbotRestaurarVersionTest extends TestCase
             && $request['slug'] === 'ventas'
             && $request['analysis_prompt'] === 'prompt anterior'
         );
+    }
+
+    public function test_un_error_de_la_api_queda_registrado_en_el_tema(): void
+    {
+        config(['services.chatbot.url' => 'https://chatbot.test']);
+
+        Http::fake(['chatbot.test/*' => Http::response(['success' => false, 'error' => 'tabla no permitida'], 422)]);
+
+        $topic = ChatbotTopic::create(['name' => 'Ventas', 'slug' => 'ventas', 'active' => true]);
+
+        $this->actingAs(User::factory()->create())
+            ->post(route('chatbot.activate', $topic));
+
+        $topic->refresh();
+        $this->assertSame('error', $topic->sync_status);
+        $this->assertStringContainsString('tabla no permitida', $topic->sync_error);
     }
 }

@@ -52,6 +52,8 @@ class ChatbotTopic extends Model
         'dataset_context',
         'sql_base_prompt',
         'validation_prompt',
+        'sync_status',
+        'sync_error',
         'synced_at'
     ];
 

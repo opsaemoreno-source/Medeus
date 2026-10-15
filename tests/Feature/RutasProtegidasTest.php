@@ -31,6 +31,19 @@ class RutasProtegidasTest extends TestCase
             ->assertJson(['draw' => 3, 'data' => []]);
     }
 
+    public function test_datos_de_compras_consultan_bigquery_una_vez(): void
+    {
+        $this->fakeBigQuery();
+
+        $this->actingAs(User::factory()->create())
+            ->getJson('/compras/data?fecha_inicio=2026-01-01')
+            ->assertOk()
+            ->assertJsonStructure(['data', 'total_ingresos_actuales', 'total_ingresos_historicos']);
+
+        // Una consulta de compras y una de ingresos históricos
+        $this->assertCount(2, $this->bigQueryQueries);
+    }
+
     public function test_gestion_de_usuarios_solo_para_admin(): void
     {
         $this->actingAs(User::factory()->create(['is_admin' => false]))

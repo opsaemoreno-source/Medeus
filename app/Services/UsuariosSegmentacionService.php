@@ -45,7 +45,9 @@ class UsuariosSegmentacionService
         }
 
         if (!empty($filtros['ciudad']) && is_scalar($filtros['ciudad'])) {
-            $params['seg_ciudad'] = strtoupper(trim((string) $filtros['ciudad']));
+            // mb_strtoupper para que las letras con tilde queden en mayúscula y
+            // NORMALIZE + \p{M} las reduzca a A-Z, igual que UPPER(u.ciudad)
+            $params['seg_ciudad'] = mb_strtoupper(trim((string) $filtros['ciudad']), 'UTF-8');
 
             $valorNorm = "
                 REGEXP_REPLACE(
